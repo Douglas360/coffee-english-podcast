@@ -14,7 +14,7 @@ export const Hero = () => {
           <img
             src="/lovable-uploads/fbdf9ea3-08c8-498e-9a45-f967045b8425.png"
             alt="Coffee & English Logo"
-            className="w-32 h-32 mx-auto mb-8"
+            className="w-32 h-32 mx-auto mb-8 rounded-full shadow-lg"
           />
           <span className="inline-block px-4 py-1 mb-6 text-sm font-medium bg-primary/10 text-primary rounded-full">
             Transform Your English in Just 30 Days
@@ -31,12 +31,13 @@ export const Hero = () => {
               className="bg-accent hover:bg-accent/90 text-white px-8"
               onClick={() => window.location.href = "https://pay.hotmart.com/Q97456947V?bid=1736708094909"}
             >
-              Start Your Journey Now
+              Start Your Journey Now - Only $3.99
             </Button>
             <Button 
               variant="outline" 
               size="lg" 
               className="border-primary text-primary hover:bg-primary/5"
+              onClick={() => document.getElementById('learn-more')?.scrollIntoView({ behavior: 'smooth' })}
             >
               Learn More
             </Button>
