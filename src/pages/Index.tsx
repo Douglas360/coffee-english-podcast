@@ -5,6 +5,7 @@ import { LearnMore } from "@/components/LearnMore";
 import { Testimonials } from "@/components/Testimonials";
 import { Pricing } from "@/components/Pricing";
 import { CallToAction } from "@/components/CallToAction";
+import { CountdownBanner } from "@/components/CountdownBanner";
 import { motion } from "framer-motion";
 
 const Index = () => {
@@ -14,6 +15,7 @@ const Index = () => {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
+      <CountdownBanner />
       <Hero />
       <Benefits />
       <Features />
