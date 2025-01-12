@@ -26,7 +26,7 @@ export const Pricing = () => {
           <div className="bg-white rounded-lg shadow-xl p-8 mt-8">
             <div className="flex justify-center items-center gap-2 mb-4">
               <span className="text-2xl line-through text-muted-foreground">$97</span>
-              <span className="text-4xl font-bold text-primary">$47</span>
+              <span className="text-4xl font-bold text-primary">$3.99</span>
             </div>
             <p className="text-muted-foreground mb-6">
               One-time payment for lifetime access

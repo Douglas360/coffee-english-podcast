@@ -22,7 +22,7 @@ export const CallToAction = () => {
             className="bg-accent hover:bg-accent/90 text-white px-8 group"
             onClick={() => window.location.href = "https://pay.hotmart.com/Q97456947V?bid=1736708094909"}
           >
-            Get Started Now
+            Get Started Now - Only $3.99
             <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Button>
           <p className="mt-4 text-sm text-muted-foreground">
