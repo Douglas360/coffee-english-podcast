@@ -4,6 +4,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { useToast } from "./ui/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
 
 export const NewsletterPopup = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -43,19 +44,11 @@ export const NewsletterPopup = () => {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("/api/subscribe", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          name,
-          listId: "your_mailchimp_list_id", // Replace with your Mailchimp list ID
-        }),
+      const { data, error } = await supabase.functions.invoke('subscribe', {
+        body: { email, name }
       });
 
-      if (!response.ok) throw new Error("Subscription failed");
+      if (error) throw new Error(error.message);
 
       localStorage.setItem("newsletterPopupShown", "true");
       setHasInteracted(true);
