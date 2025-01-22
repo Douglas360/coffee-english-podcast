@@ -6,6 +6,7 @@ import { Testimonials } from "@/components/Testimonials";
 import { Pricing } from "@/components/Pricing";
 import { CallToAction } from "@/components/CallToAction";
 import { CountdownBanner } from "@/components/CountdownBanner";
+import { NewsletterPopup } from "@/components/NewsletterPopup";
 import { motion } from "framer-motion";
 
 const Index = () => {
@@ -23,6 +24,7 @@ const Index = () => {
       <Testimonials />
       <Pricing />
       <CallToAction />
+      <NewsletterPopup />
     </motion.div>
   );
 };
