@@ -14,16 +14,13 @@ export const NewsletterPopup = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if user has already interacted with popup
     const popupShown = localStorage.getItem("newsletterPopupShown");
     if (popupShown) return;
 
-    // Show popup after 12 seconds
     const timeoutId = setTimeout(() => {
       setIsVisible(true);
     }, 12000);
 
-    // Track scroll position
     const handleScroll = () => {
       if (hasInteracted) return;
       
@@ -51,7 +48,11 @@ export const NewsletterPopup = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, name }),
+        body: JSON.stringify({
+          email,
+          name,
+          listId: "your_mailchimp_list_id", // Replace with your Mailchimp list ID
+        }),
       });
 
       if (!response.ok) throw new Error("Subscription failed");
@@ -61,14 +62,14 @@ export const NewsletterPopup = () => {
       setIsVisible(false);
       
       toast({
-        title: "Sucesso!",
-        description: "Seu e-book foi enviado para seu email. Confira sua caixa de entrada!",
+        title: "Success!",
+        description: "Your e-book has been sent to your email. Check your inbox!",
         duration: 5000,
       });
     } catch (error) {
       toast({
-        title: "Erro",
-        description: "Houve um erro ao processar sua inscrição. Tente novamente.",
+        title: "Error",
+        description: "There was an error processing your subscription. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -100,11 +101,16 @@ export const NewsletterPopup = () => {
             </button>
 
             <div className="text-center mb-6">
+              <img
+                src="/lovable-uploads/c2fdcffe-a85f-4fe9-bad0-2270670ff863.png"
+                alt="7 Secrets for ESL Learners"
+                className="w-full h-auto mb-4 rounded-lg"
+              />
               <h2 className="text-2xl font-bold text-primary mb-2">
-                7 Secrets in English You Need to Know
+                7 Secrets for ESL Learners
               </h2>
               <p className="text-muted-foreground">
-                Receba gratuitamente nosso e-book exclusivo e transforme seu aprendizado de inglês!
+                Get our exclusive e-book for free and transform your English learning journey!
               </p>
             </div>
 
@@ -112,7 +118,7 @@ export const NewsletterPopup = () => {
               <div>
                 <Input
                   type="text"
-                  placeholder="Seu nome"
+                  placeholder="Your name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
@@ -122,7 +128,7 @@ export const NewsletterPopup = () => {
               <div>
                 <Input
                   type="email"
-                  placeholder="Seu melhor email"
+                  placeholder="Your best email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -131,16 +137,16 @@ export const NewsletterPopup = () => {
               </div>
               <Button
                 type="submit"
-                className="w-full bg-accent hover:bg-accent/90 text-white"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? "Enviando..." : "Baixe seu E-book Grátis!"}
+                {isSubmitting ? "Sending..." : "Download Your Free E-book!"}
               </Button>
             </form>
 
             <p className="mt-4 text-xs text-center text-muted-foreground">
-              Ao se inscrever, você concorda em receber nossos emails. 
-              Você pode cancelar a qualquer momento.
+              By subscribing, you agree to receive our emails. 
+              You can unsubscribe at any time.
             </p>
           </div>
         </motion.div>
