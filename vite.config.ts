@@ -30,7 +30,7 @@ export default defineConfig(({ mode }) => ({
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],
-          ui: ['@radix-ui/react-icons', '@radix-ui/react-slot']
+          ui: ['@radix-ui/react-slot']  // Removed react-icons from here since we use lucide-react instead
         }
       }
     },
