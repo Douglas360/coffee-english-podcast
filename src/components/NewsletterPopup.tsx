@@ -59,6 +59,9 @@ export const NewsletterPopup = () => {
         description: "Your e-book has been sent to your email. Check your inbox!",
         duration: 5000,
       });
+
+      // Redirecionar para o e-book após o sucesso
+      window.open('https://drive.google.com/file/d/1Xdq73qBmEsIVY2czYmmNBkdmfmJCJ6zI/view?usp=sharing', '_blank');
     } catch (error) {
       toast({
         title: "Error",
@@ -97,7 +100,7 @@ export const NewsletterPopup = () => {
               <img
                 src="/lovable-uploads/c2fdcffe-a85f-4fe9-bad0-2270670ff863.png"
                 alt="7 Secrets for ESL Learners"
-                className="w-full h-auto mb-4 rounded-lg"
+                className="w-1/2 h-auto mx-auto mb-4 rounded-lg" // Reduzido para 50% e centralizado
               />
               <h2 className="text-2xl font-bold text-primary mb-2">
                 7 Secrets for ESL Learners

@@ -7,6 +7,7 @@ import { Pricing } from "@/components/Pricing";
 import { CallToAction } from "@/components/CallToAction";
 import { CountdownBanner } from "@/components/CountdownBanner";
 import { NewsletterPopup } from "@/components/NewsletterPopup";
+import { Blog } from "@/components/Blog";
 import { motion } from "framer-motion";
 
 const Index = () => {
@@ -21,6 +22,7 @@ const Index = () => {
       <Benefits />
       <Features />
       <LearnMore />
+      <Blog />
       <Testimonials />
       <Pricing />
       <CallToAction />
