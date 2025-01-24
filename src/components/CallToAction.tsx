@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Clock, Shield, Award } from "lucide-react";
 
 export const CallToAction = () => {
   return (
@@ -11,22 +11,50 @@ export const CallToAction = () => {
           whileInView={{ opacity: 1, y: 0 }}
           className="max-w-3xl mx-auto text-center"
         >
+          <span className="inline-block px-4 py-1 mb-6 text-sm font-medium bg-accent/20 text-accent rounded-full">
+            Oferta Especial por Tempo Limitado
+          </span>
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Ready to Transform Your English?
+            Não Deixe seu Sonho de Falar Inglês Esperando
           </h2>
-          <p className="text-lg text-muted-foreground mb-8">
-            Join thousands of successful learners and start your journey to English fluency today.
+          <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
+            Imagine-se daqui a 30 dias, conversando em inglês com confiança e naturalidade. 
+            Este pode ser você! Junte-se aos milhares de alunos que já transformaram suas vidas.
           </p>
-          <Button
-            size="lg"
-            className="bg-accent hover:bg-accent/90 text-white px-8 group"
-            onClick={() => window.location.href = "https://pay.hotmart.com/Q97456947V?bid=1736708094909"}
-          >
-            Get Started Now - Only $3.99
-            <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </Button>
-          <p className="mt-4 text-sm text-muted-foreground">
-            30-day money-back guarantee. No questions asked.
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="flex items-center gap-3 justify-center">
+              <Clock className="w-5 h-5 text-primary" />
+              <span className="text-sm">Acesso Vitalício</span>
+            </div>
+            <div className="flex items-center gap-3 justify-center">
+              <Shield className="w-5 h-5 text-primary" />
+              <span className="text-sm">Garantia de 30 dias</span>
+            </div>
+            <div className="flex items-center gap-3 justify-center">
+              <Award className="w-5 h-5 text-primary" />
+              <span className="text-sm">Certificado Incluso</span>
+            </div>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow-xl mb-8">
+            <div className="flex justify-center items-center gap-4 mb-4">
+              <span className="text-2xl line-through text-muted-foreground">$97</span>
+              <span className="text-4xl font-bold text-primary">$3.99</span>
+            </div>
+            <Button
+              size="lg"
+              className="bg-accent hover:bg-accent/90 text-white px-8 group w-full sm:w-auto transform hover:scale-105 transition-all duration-300"
+              onClick={() => window.location.href = "https://pay.hotmart.com/Q97456947V?bid=1736708094909"}
+            >
+              Comece Agora
+              <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Button>
+          </div>
+
+          <p className="text-sm text-muted-foreground flex items-center justify-center gap-2">
+            <Shield className="w-4 h-4" />
+            Garantia incondicional de devolução do dinheiro em 30 dias
           </p>
         </motion.div>
       </div>

@@ -16,13 +16,14 @@ const Index = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
+      className="bg-gradient-to-b from-secondary/50 to-white"
     >
       <CountdownBanner />
       <Hero />
       <Benefits />
       <Features />
       <LearnMore />
-      {/*<Blog />*/}
+      <Blog />
       <Testimonials />
       <Pricing />
       <CallToAction />
