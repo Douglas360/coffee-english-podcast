@@ -4,23 +4,23 @@ import { motion } from "framer-motion";
 const benefits = [
   {
     icon: Coffee,
-    title: "Aprendizado Natural",
-    description: "Transforme seu momento de café em uma experiência única de imersão no inglês",
+    title: "Natural Learning",
+    description: "Transform your coffee moment into a unique English immersion experience",
   },
   {
     icon: Brain,
-    title: "Método Científico",
-    description: "Técnicas de PNL e aprendizado acelerado para resultados surpreendentes",
+    title: "Scientific Method",
+    description: "NLP techniques and accelerated learning for amazing results",
   },
   {
     icon: Target,
-    title: "Resultados Rápidos",
-    description: "Veja progressos reais em apenas 30 dias de prática consistente",
+    title: "Quick Results",
+    description: "See real progress in just 30 days of consistent practice",
   },
   {
     icon: Clock,
-    title: "Flexibilidade Total",
-    description: "Estude no seu ritmo, sem pressão, com acesso vitalício ao material",
+    title: "Total Flexibility",
+    description: "Study at your own pace, without pressure, with lifetime access to materials",
   },
 ];
 
@@ -34,7 +34,7 @@ export const Benefits = () => {
             whileInView={{ opacity: 1, y: 0 }}
             className="text-3xl md:text-4xl font-bold mb-4"
           >
-            Descubra o Poder da Nossa Metodologia
+            Discover the Power of Our Methodology
           </motion.h2>
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
@@ -42,7 +42,7 @@ export const Benefits = () => {
             transition={{ delay: 0.2 }}
             className="text-muted-foreground max-w-2xl mx-auto"
           >
-            Uma abordagem revolucionária que combina ciência e praticidade para seu sucesso
+            A revolutionary approach that combines science and practicality for your success
           </motion.p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">

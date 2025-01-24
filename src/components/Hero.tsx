@@ -23,15 +23,15 @@ export const Hero = () => {
             className="space-y-6"
           >
             <span className="inline-block px-4 py-1 mb-6 text-sm font-medium bg-primary/10 text-primary rounded-full animate-pulse">
-              Descubra o Segredo para Falar Inglês com Naturalidade
+              Discover the Secret to Speaking English Naturally
             </span>
             <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
-              Transforme seu Café Diário em uma{" "}
-              <span className="italic">Poderosa Ferramenta de Aprendizado</span>
+              Transform Your Daily Coffee into a{" "}
+              <span className="italic">Powerful Learning Tool</span>
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
-              Imagine dominar o inglês naturalmente, sem pressão, enquanto desfruta do seu momento de café. 
-              Nossa metodologia exclusiva combina o prazer do seu ritual diário com técnicas comprovadas de aprendizado acelerado.
+              Imagine mastering English naturally, without pressure, while enjoying your coffee moment. 
+              Our exclusive methodology combines the pleasure of your daily ritual with proven accelerated learning techniques.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Button 
@@ -39,7 +39,7 @@ export const Hero = () => {
                 className="bg-accent hover:bg-accent/90 text-white px-8 transform hover:scale-105 transition-all duration-300 shadow-lg"
                 onClick={() => window.location.href = "https://pay.hotmart.com/Q97456947V?bid=1736708094909"}
               >
-                Comece Agora - Apenas $3.99
+                Start Now - Only $3.99
               </Button>
               <Button 
                 variant="outline" 
@@ -47,7 +47,7 @@ export const Hero = () => {
                 className="border-primary text-primary hover:bg-primary/5 group"
                 onClick={() => document.getElementById('learn-more')?.scrollIntoView({ behavior: 'smooth' })}
               >
-                Descubra Como
+                Discover How
                 <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
               </Button>
             </div>
@@ -58,7 +58,7 @@ export const Hero = () => {
               className="mt-8 space-y-4"
             >
               <p className="text-sm text-muted-foreground">
-                Junte-se a mais de 1,000+ alunos satisfeitos
+                Join over 1,000+ satisfied students
               </p>
               <div className="flex justify-center items-center gap-2">
                 {[...Array(5)].map((_, i) => (
