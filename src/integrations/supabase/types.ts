@@ -336,11 +336,13 @@ export type Database = {
           likes_count: number | null
           meta_description: string | null
           meta_keywords: string[] | null
+          meta_title: string | null
           published_at: string | null
           reading_time: number | null
           scheduled_for: string | null
           seo_description: string | null
           seo_keywords: string[] | null
+          seo_score: number | null
           seo_title: string | null
           slug: string
           status: string | null
@@ -365,11 +367,13 @@ export type Database = {
           likes_count?: number | null
           meta_description?: string | null
           meta_keywords?: string[] | null
+          meta_title?: string | null
           published_at?: string | null
           reading_time?: number | null
           scheduled_for?: string | null
           seo_description?: string | null
           seo_keywords?: string[] | null
+          seo_score?: number | null
           seo_title?: string | null
           slug: string
           status?: string | null
@@ -394,11 +398,13 @@ export type Database = {
           likes_count?: number | null
           meta_description?: string | null
           meta_keywords?: string[] | null
+          meta_title?: string | null
           published_at?: string | null
           reading_time?: number | null
           scheduled_for?: string | null
           seo_description?: string | null
           seo_keywords?: string[] | null
+          seo_score?: number | null
           seo_title?: string | null
           slug?: string
           status?: string | null
@@ -498,6 +504,54 @@ export type Database = {
           website?: string | null
         }
         Relationships: []
+      }
+      seo_analysis: {
+        Row: {
+          analyzed_at: string | null
+          external_links_count: number | null
+          id: string
+          internal_links_count: number | null
+          keyword_density: number | null
+          post_id: string | null
+          readability_score: number | null
+          suggestions: Json | null
+        }
+        Insert: {
+          analyzed_at?: string | null
+          external_links_count?: number | null
+          id?: string
+          internal_links_count?: number | null
+          keyword_density?: number | null
+          post_id?: string | null
+          readability_score?: number | null
+          suggestions?: Json | null
+        }
+        Update: {
+          analyzed_at?: string | null
+          external_links_count?: number | null
+          id?: string
+          internal_links_count?: number | null
+          keyword_density?: number | null
+          post_id?: string | null
+          readability_score?: number | null
+          suggestions?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_post"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seo_analysis_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       subscribers: {
         Row: {
