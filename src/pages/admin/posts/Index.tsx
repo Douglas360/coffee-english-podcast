@@ -36,11 +36,26 @@ export default function PostsIndex() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('posts')
-        .select('*, post_analytics(views, unique_views)')
+        .select(`
+          *,
+          post_analytics (
+            views,
+            unique_views,
+            avg_time_on_page,
+            bounce_rate,
+            created_at,
+            updated_at
+          )
+        `)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data as (Tables<'posts'> & { post_analytics: Tables<'post_analytics'> | null })[];
+      return data.map(post => ({
+        ...post,
+        post_analytics: post.post_analytics?.[0] || null
+      })) as (Tables<'posts'> & { 
+        post_analytics: Tables<'post_analytics'> | null 
+      })[];
     }
   });
 

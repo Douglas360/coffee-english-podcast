@@ -73,12 +73,27 @@ export default function PostEditor() {
       if (!id) return null;
       const { data, error } = await supabase
         .from('posts')
-        .select('*, post_analytics(*)')
+        .select(`
+          *,
+          post_analytics (
+            views,
+            unique_views,
+            avg_time_on_page,
+            bounce_rate,
+            created_at,
+            updated_at
+          )
+        `)
         .eq('id', id)
         .single();
       
       if (error) throw error;
-      return data as Tables<'posts'> & { post_analytics: Tables<'post_analytics'> | null };
+      return {
+        ...data,
+        post_analytics: data.post_analytics || null
+      } as Tables<'posts'> & { 
+        post_analytics: Tables<'post_analytics'> | null 
+      };
     },
     enabled: isEditing
   });
