@@ -19,6 +19,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon, Save } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 type PostFormData = {
   title: string;
@@ -35,6 +36,7 @@ type PostFormData = {
 export default function PostEditor() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const isEditing = !!id;
 
   const form = useForm<PostFormData>({
@@ -67,6 +69,15 @@ export default function PostEditor() {
     enabled: isEditing
   });
 
+  const { data: session } = useQuery({
+    queryKey: ['session'],
+    queryFn: async () => {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error) throw error;
+      return session;
+    }
+  });
+
   React.useEffect(() => {
     if (post) {
       form.reset({
@@ -85,10 +96,15 @@ export default function PostEditor() {
 
   const createPost = useMutation({
     mutationFn: async (data: PostFormData) => {
+      if (!session?.user?.id) {
+        throw new Error('User must be logged in to create a post');
+      }
+
       const { data: newPost, error } = await supabase
         .from('posts')
         .insert([{
           ...data,
+          author_id: session.user.id,
           meta_keywords: data.meta_keywords,
           scheduled_for: data.scheduled_for?.toISOString(),
         }])
@@ -99,7 +115,18 @@ export default function PostEditor() {
       return newPost;
     },
     onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Post created successfully",
+      });
       navigate('/admin/posts');
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   });
 
@@ -120,7 +147,18 @@ export default function PostEditor() {
       return updatedPost;
     },
     onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Post updated successfully",
+      });
       navigate('/admin/posts');
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   });
 
@@ -290,6 +328,26 @@ export default function PostEditor() {
                           />
                         </PopoverContent>
                       </Popover>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Status</FormLabel>
+                    <FormControl>
+                      <select 
+                        className="w-full p-2 border rounded"
+                        {...field}
+                      >
+                        <option value="draft">Draft</option>
+                        <option value="published">Published</option>
+                      </select>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
