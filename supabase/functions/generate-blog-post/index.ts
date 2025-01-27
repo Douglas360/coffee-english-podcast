@@ -1,41 +1,64 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-interface GeneratePostRequest {
-  title: string;
-  tone?: 'formal' | 'informal' | 'technical' | 'persuasive';
-  length?: 'short' | 'medium' | 'long';
-}
-
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { title, tone = 'formal', length = 'medium' } = await req.json() as GeneratePostRequest;
+    const { title, tone = 'formal', length = 'medium' } = await req.json();
 
-    // Define length parameters
-    const lengthGuide = {
-      short: '500-800 words',
-      medium: '1000-1500 words',
-      long: '2000-2500 words'
-    };
+    // First, generate an optimized title
+    const titleResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are an SEO expert. Generate an engaging, SEO-optimized title based on the given topic. The title should be catchy and under 60 characters.'
+          },
+          { role: 'user', content: `Generate a title based on this topic: ${title}` }
+        ],
+      }),
+    });
 
-    const systemPrompt = `You are an expert blog post writer and SEO specialist. Create a well-structured blog post with the following characteristics:
+    const titleData = await titleResponse.json();
+    const optimizedTitle = titleData.choices[0].message.content.replace(/["']/g, '');
+
+    // Generate the main content
+    const contentPrompt = `Create a comprehensive blog post about "${optimizedTitle}" with the following specifications:
     - Use a ${tone} tone
-    - Target length: ${lengthGuide[length]}
-    - Include proper HTML heading tags (h1, h2, h3)
-    - Include meta title and meta description optimized for SEO
-    - Include relevant keywords
-    - Structure content with bullet points and paragraphs for readability
-    - Add internal linking suggestions`;
+    - Length: ${length}
+    - Include a compelling excerpt (max 160 characters)
+    - Structure the content with proper markdown headings (H2, H3)
+    - Include bullet points for key takeaways
+    - Optimize for SEO with relevant keywords
+    - Include a detailed meta description
+    - Suggest an image prompt that captures the essence of the post
+    
+    Format the response in this exact structure:
+    EXCERPT:
+    [excerpt here]
+    
+    META_DESCRIPTION:
+    [meta description here]
+    
+    IMAGE_PROMPT:
+    [image generation prompt here]
+    
+    CONTENT:
+    [main content here]`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -44,35 +67,59 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-4o-mini',
         messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: `Create a blog post about: ${title}` }
+          { role: 'system', content: 'You are an expert blog writer and SEO specialist.' },
+          { role: 'user', content: contentPrompt }
         ],
-        temperature: 0.7,
       }),
     });
-
-    if (!response.ok) {
-      const error = await response.json();
-      console.error('OpenAI API error:', error);
-      throw new Error('Failed to generate blog post');
-    }
 
     const data = await response.json();
     const generatedContent = data.choices[0].message.content;
 
-    // Parse the generated content to extract different components
-    const metaTitle = title;
-    const metaDescription = generatedContent.split('\n')[0];
-    const suggestedKeywords = extractKeywords(generatedContent);
+    // Parse the different sections
+    const excerpt = generatedContent.match(/EXCERPT:\n(.*?)\n\nMETA_DESCRIPTION/s)?.[1].trim();
+    const metaDescription = generatedContent.match(/META_DESCRIPTION:\n(.*?)\n\nIMAGE_PROMPT/s)?.[1].trim();
+    const imagePrompt = generatedContent.match(/IMAGE_PROMPT:\n(.*?)\n\nCONTENT/s)?.[1].trim();
+    const content = generatedContent.match(/CONTENT:\n(.*)/s)?.[1].trim();
+
+    // Generate image using DALL-E
+    const imageResponse = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: "dall-e-3",
+        prompt: imagePrompt,
+        n: 1,
+        size: "1024x1024",
+      }),
+    });
+
+    const imageData = await imageResponse.json();
+    const imageUrl = imageData.data?.[0]?.url;
+
+    // Generate slug from title
+    const slug = optimizedTitle
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+
+    // Get current date for scheduling
+    const scheduledDate = new Date().toISOString();
 
     const result = {
-      content: generatedContent,
-      metaTitle,
+      title: optimizedTitle,
+      content,
+      excerpt,
       metaDescription,
-      suggestedKeywords,
-      suggestedLinks: [] // This could be enhanced with link extraction logic
+      imageUrl,
+      slug,
+      scheduledDate,
+      suggestedKeywords: extractKeywords(content),
     };
 
     return new Response(JSON.stringify(result), {
@@ -88,7 +135,6 @@ serve(async (req) => {
 });
 
 function extractKeywords(content: string): string[] {
-  // Simple keyword extraction - this could be enhanced with more sophisticated logic
   const words = content.toLowerCase().split(/\W+/);
   const stopWords = new Set(['the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'a', 'an']);
   const keywords = words

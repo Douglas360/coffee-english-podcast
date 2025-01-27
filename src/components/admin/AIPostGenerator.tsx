@@ -23,11 +23,14 @@ import { useToast } from '@/hooks/use-toast';
 
 interface AIPostGeneratorProps {
   onPostGenerated: (post: {
+    title: string;
     content: string;
-    metaTitle: string;
+    excerpt: string;
     metaDescription: string;
+    imageUrl: string;
+    slug: string;
+    scheduledDate: string;
     suggestedKeywords: string[];
-    suggestedLinks: string[];
   }) => void;
 }
 
@@ -82,9 +85,9 @@ export default function AIPostGenerator({ onPostGenerated }: AIPostGeneratorProp
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Post Title</FormLabel>
+              <FormLabel>Post Topic</FormLabel>
               <FormControl>
-                <Input {...field} placeholder="Enter the main topic or title" />
+                <Input {...field} placeholder="Enter the main topic or subject" />
               </FormControl>
               <FormMessage />
             </FormItem>

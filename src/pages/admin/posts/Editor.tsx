@@ -242,16 +242,25 @@ export default function PostEditor() {
   };
 
   const handleAIGenerated = (generatedPost: {
+    title: string;
     content: string;
-    metaTitle: string;
+    excerpt: string;
     metaDescription: string;
+    imageUrl: string;
+    slug: string;
+    scheduledDate: string;
     suggestedKeywords: string[];
-    suggestedLinks: string[];
   }) => {
+    form.setValue('title', generatedPost.title);
     form.setValue('content', generatedPost.content);
-    form.setValue('meta_title', generatedPost.metaTitle);
+    form.setValue('excerpt', generatedPost.excerpt);
     form.setValue('meta_description', generatedPost.metaDescription);
+    form.setValue('featured_image', generatedPost.imageUrl);
+    form.setValue('slug', generatedPost.slug);
+    form.setValue('scheduled_for', new Date(generatedPost.scheduledDate));
     form.setValue('meta_keywords', generatedPost.suggestedKeywords);
+    
+    setPreviewImage(generatedPost.imageUrl);
     
     toast({
       title: 'Post Generated',
