@@ -22,6 +22,9 @@ import { Calendar as CalendarIcon, Save, Image as ImageIcon } from "lucide-react
 import { useToast } from "@/hooks/use-toast";
 import MDEditor from '@uiw/react-md-editor';
 import rehypeSanitize from "rehype-sanitize";
+import AIPostGenerator from '@/components/admin/AIPostGenerator';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { Wand2 } from 'lucide-react';
 
 type PostFormData = {
   title: string;
@@ -238,15 +241,49 @@ export default function PostEditor() {
     }
   };
 
+  const handleAIGenerated = (generatedPost: {
+    content: string;
+    metaTitle: string;
+    metaDescription: string;
+    suggestedKeywords: string[];
+    suggestedLinks: string[];
+  }) => {
+    form.setValue('content', generatedPost.content);
+    form.setValue('meta_title', generatedPost.metaTitle);
+    form.setValue('meta_description', generatedPost.metaDescription);
+    form.setValue('meta_keywords', generatedPost.suggestedKeywords);
+    
+    toast({
+      title: 'Post Generated',
+      description: 'The AI-generated content has been added to the editor.',
+    });
+  };
+
   return (
     <div className="container mx-auto p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">
           {isEditing ? 'Edit Post' : 'New Post'}
         </h1>
-        <Button onClick={() => navigate('/admin/posts')}>
-          Cancel
-        </Button>
+        <div className="flex gap-2">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <Wand2 className="mr-2 h-4 w-4" />
+                AI Assistant
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[600px]">
+              <div className="p-4">
+                <h2 className="text-lg font-semibold mb-4">Generate Post with AI</h2>
+                <AIPostGenerator onPostGenerated={handleAIGenerated} />
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Button onClick={() => navigate('/admin/posts')}>
+            Cancel
+          </Button>
+        </div>
       </div>
 
       {post && (
