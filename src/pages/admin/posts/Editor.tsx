@@ -18,8 +18,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, Save } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { Calendar as CalendarIcon, Save, Image as ImageIcon } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import MDEditor from '@uiw/react-md-editor';
+import rehypeSanitize from "rehype-sanitize";
 
 type PostFormData = {
   title: string;
@@ -31,6 +33,7 @@ type PostFormData = {
   meta_keywords: string[];
   scheduled_for: Date | null;
   status: 'draft' | 'published';
+  featured_image: string | null;
 };
 
 export default function PostEditor() {
@@ -38,6 +41,7 @@ export default function PostEditor() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const isEditing = !!id;
+  const [previewImage, setPreviewImage] = React.useState<string | null>(null);
 
   const form = useForm<PostFormData>({
     defaultValues: {
@@ -49,24 +53,9 @@ export default function PostEditor() {
       meta_description: "",
       meta_keywords: [],
       scheduled_for: null,
-      status: 'draft'
+      status: 'draft',
+      featured_image: null
     }
-  });
-
-  const { data: post, isLoading: isLoadingPost } = useQuery({
-    queryKey: ['post', id],
-    queryFn: async () => {
-      if (!id) return null;
-      const { data, error } = await supabase
-        .from('posts')
-        .select('*')
-        .eq('id', id)
-        .single();
-      
-      if (error) throw error;
-      return data as Tables<'posts'>;
-    },
-    enabled: isEditing
   });
 
   const { data: session } = useQuery({
@@ -76,6 +65,22 @@ export default function PostEditor() {
       if (error) throw error;
       return session;
     }
+  });
+
+  const { data: post, isLoading: isLoadingPost } = useQuery({
+    queryKey: ['post', id],
+    queryFn: async () => {
+      if (!id) return null;
+      const { data, error } = await supabase
+        .from('posts')
+        .select('*, post_analytics(*)')
+        .eq('id', id)
+        .single();
+      
+      if (error) throw error;
+      return data as Tables<'posts'> & { post_analytics: Tables<'post_analytics'> | null };
+    },
+    enabled: isEditing
   });
 
   React.useEffect(() => {
@@ -89,10 +94,46 @@ export default function PostEditor() {
         meta_description: post.meta_description || "",
         meta_keywords: post.meta_keywords || [],
         scheduled_for: post.scheduled_for ? new Date(post.scheduled_for) : null,
-        status: post.status as 'draft' | 'published' || 'draft'
+        status: post.status as 'draft' | 'published' || 'draft',
+        featured_image: post.featured_image
       });
+      setPreviewImage(post.featured_image);
     }
   }, [post]);
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const fileExt = file.name.split('.').pop();
+      const filePath = `${crypto.randomUUID()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('news-images')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('news-images')
+        .getPublicUrl(filePath);
+
+      form.setValue('featured_image', publicUrl);
+      setPreviewImage(publicUrl);
+
+      toast({
+        title: "Success",
+        description: "Image uploaded successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
 
   const createPost = useMutation({
     mutationFn: async (data: PostFormData) => {
@@ -107,6 +148,7 @@ export default function PostEditor() {
           author_id: session.user.id,
           meta_keywords: data.meta_keywords,
           scheduled_for: data.scheduled_for?.toISOString(),
+          featured_image: data.featured_image
         }])
         .select()
         .single();
@@ -121,7 +163,7 @@ export default function PostEditor() {
       });
       navigate('/admin/posts');
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({
         title: "Error",
         description: error.message,
@@ -138,6 +180,7 @@ export default function PostEditor() {
           ...data,
           meta_keywords: data.meta_keywords,
           scheduled_for: data.scheduled_for?.toISOString(),
+          featured_image: data.featured_image
         })
         .eq('id', id)
         .select()
@@ -153,7 +196,7 @@ export default function PostEditor() {
       });
       navigate('/admin/posts');
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({
         title: "Error",
         description: error.message,
@@ -181,12 +224,33 @@ export default function PostEditor() {
         </Button>
       </div>
 
+      {post && (
+        <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+          <h2 className="text-lg font-semibold mb-2">Post Statistics</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <p className="text-sm text-gray-600">Views</p>
+              <p className="text-2xl font-bold">{post.post_analytics?.views || 0}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Unique Views</p>
+              <p className="text-2xl font-bold">{post.post_analytics?.unique_views || 0}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">SEO Score</p>
+              <p className="text-2xl font-bold">{post.seo_score || 0}%</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <Tabs defaultValue="content">
             <TabsList>
               <TabsTrigger value="content">Content</TabsTrigger>
               <TabsTrigger value="seo">SEO</TabsTrigger>
+              <TabsTrigger value="preview">Preview</TabsTrigger>
               <TabsTrigger value="settings">Settings</TabsTrigger>
             </TabsList>
 
@@ -212,10 +276,56 @@ export default function PostEditor() {
                   <FormItem>
                     <FormLabel>Content</FormLabel>
                     <FormControl>
-                      <textarea 
-                        className="w-full min-h-[400px] p-4 rounded-md border"
-                        {...field} 
+                      <MDEditor
+                        value={field.value}
+                        onChange={(value) => field.onChange(value || '')}
+                        preview="edit"
+                        previewOptions={{
+                          rehypePlugins: [[rehypeSanitize]],
+                        }}
+                        height={400}
                       />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="featured_image"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Featured Image</FormLabel>
+                    <FormControl>
+                      <div className="space-y-4">
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          className="hidden"
+                          id="image-upload"
+                        />
+                        <label
+                          htmlFor="image-upload"
+                          className="flex items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:border-gray-400 transition-colors"
+                        >
+                          {previewImage ? (
+                            <img
+                              src={previewImage}
+                              alt="Preview"
+                              className="h-full object-contain"
+                            />
+                          ) : (
+                            <div className="flex flex-col items-center">
+                              <ImageIcon className="w-8 h-8 text-gray-400" />
+                              <span className="mt-2 text-sm text-gray-500">
+                                Click to upload image
+                              </span>
+                            </div>
+                          )}
+                        </label>
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -245,8 +355,11 @@ export default function PostEditor() {
                   <FormItem>
                     <FormLabel>Meta Title</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input {...field} maxLength={60} />
                     </FormControl>
+                    <div className="text-xs text-gray-500">
+                      {field.value.length}/60 characters
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -259,8 +372,11 @@ export default function PostEditor() {
                   <FormItem>
                     <FormLabel>Meta Description</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input {...field} maxLength={160} />
                     </FormControl>
+                    <div className="text-xs text-gray-500">
+                      {field.value.length}/160 characters
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -284,6 +400,23 @@ export default function PostEditor() {
                   </FormItem>
                 )}
               />
+            </TabsContent>
+
+            <TabsContent value="preview" className="space-y-4">
+              <div className="border p-4 rounded-lg">
+                <h3 className="text-lg font-semibold mb-2">Google Search Preview</h3>
+                <div className="max-w-2xl">
+                  <div className="text-blue-800 text-xl hover:underline cursor-pointer">
+                    {form.watch('meta_title') || form.watch('title')}
+                  </div>
+                  <div className="text-green-700 text-sm">
+                    yourdomain.com/blog/{form.watch('slug')}
+                  </div>
+                  <div className="text-gray-600 text-sm mt-1">
+                    {form.watch('meta_description') || form.watch('excerpt')}
+                  </div>
+                </div>
+              </div>
             </TabsContent>
 
             <TabsContent value="settings" className="space-y-4">

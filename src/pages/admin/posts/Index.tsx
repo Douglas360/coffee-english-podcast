@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
 import { Button } from "@/components/ui/button";
@@ -13,20 +13,59 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Eye, Edit, Trash, Plus } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function PostsIndex() {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: posts, isLoading } = useQuery({
     queryKey: ['admin-posts'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('posts')
-        .select('*')
+        .select('*, post_analytics(views, unique_views)')
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data as Tables<'posts'>[];
+      return data as (Tables<'posts'> & { post_analytics: Tables<'post_analytics'> | null })[];
+    }
+  });
+
+  const deletePostMutation = useMutation({
+    mutationFn: async (postId: string) => {
+      const { error } = await supabase
+        .from('posts')
+        .delete()
+        .eq('id', postId);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-posts'] });
+      toast({
+        title: "Success",
+        description: "Post deleted successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   });
 
@@ -51,6 +90,7 @@ export default function PostsIndex() {
               <TableHead>Title</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>SEO Score</TableHead>
+              <TableHead>Views</TableHead>
               <TableHead>Published</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
@@ -79,6 +119,9 @@ export default function PostsIndex() {
                     {post.seo_score || 0}%
                   </span>
                 </TableCell>
+                <TableCell>
+                  {post.post_analytics?.views || 0} views
+                </TableCell>
                 <TableCell>{formatDate(post.published_at)}</TableCell>
                 <TableCell>
                   <div className="flex space-x-2">
@@ -96,13 +139,35 @@ export default function PostsIndex() {
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="icon"
-                      className="text-red-500 hover:text-red-600"
-                    >
-                      <Trash className="h-4 w-4" />
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          className="text-red-500 hover:text-red-600"
+                        >
+                          <Trash className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete the post
+                            and all its associated data.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => deletePostMutation.mutate(post.id)}
+                            className="bg-red-500 hover:bg-red-600"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </TableCell>
               </TableRow>
