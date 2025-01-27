@@ -26,6 +26,17 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
+type PostWithAnalytics = Tables<'posts'> & {
+  post_analytics: Pick<Tables<'post_analytics'>, 
+    'views' | 
+    'unique_views' | 
+    'avg_time_on_page' | 
+    'bounce_rate' | 
+    'created_at' | 
+    'updated_at'
+  > | null;
+};
+
 export default function PostsIndex() {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -50,12 +61,11 @@ export default function PostsIndex() {
         .order('created_at', { ascending: false });
       
       if (error) throw error;
+      
       return data.map(post => ({
         ...post,
         post_analytics: post.post_analytics?.[0] || null
-      })) as (Tables<'posts'> & { 
-        post_analytics: Tables<'post_analytics'> | null 
-      })[];
+      })) as PostWithAnalytics[];
     }
   });
 

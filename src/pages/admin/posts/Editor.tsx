@@ -36,6 +36,17 @@ type PostFormData = {
   featured_image: string | null;
 };
 
+type PostWithAnalytics = Tables<'posts'> & {
+  post_analytics: Pick<Tables<'post_analytics'>, 
+    'views' | 
+    'unique_views' | 
+    'avg_time_on_page' | 
+    'bounce_rate' | 
+    'created_at' | 
+    'updated_at'
+  > | null;
+};
+
 export default function PostEditor() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -88,12 +99,11 @@ export default function PostEditor() {
         .single();
       
       if (error) throw error;
+      
       return {
         ...data,
-        post_analytics: data.post_analytics || null
-      } as Tables<'posts'> & { 
-        post_analytics: Tables<'post_analytics'> | null 
-      };
+        post_analytics: data.post_analytics?.[0] || null
+      } as PostWithAnalytics;
     },
     enabled: isEditing
   });
