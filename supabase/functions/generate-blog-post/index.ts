@@ -35,14 +35,7 @@ serve(async (req) => {
     - Include meta title and meta description optimized for SEO
     - Include relevant keywords
     - Structure content with bullet points and paragraphs for readability
-    - Add internal linking suggestions
-    
-    Format the response as a JSON object with these fields:
-    - content: The main blog post content in markdown format
-    - metaTitle: SEO-optimized title (max 60 chars)
-    - metaDescription: SEO-optimized description (max 160 chars)
-    - suggestedKeywords: Array of relevant keywords
-    - suggestedLinks: Array of internal linking suggestions`;
+    - Add internal linking suggestions`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -67,9 +60,22 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    const generatedContent = JSON.parse(data.choices[0].message.content);
+    const generatedContent = data.choices[0].message.content;
 
-    return new Response(JSON.stringify(generatedContent), {
+    // Parse the generated content to extract different components
+    const metaTitle = title;
+    const metaDescription = generatedContent.split('\n')[0];
+    const suggestedKeywords = extractKeywords(generatedContent);
+
+    const result = {
+      content: generatedContent,
+      metaTitle,
+      metaDescription,
+      suggestedKeywords,
+      suggestedLinks: [] // This could be enhanced with link extraction logic
+    };
+
+    return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
@@ -80,3 +86,20 @@ serve(async (req) => {
     });
   }
 });
+
+function extractKeywords(content: string): string[] {
+  // Simple keyword extraction - this could be enhanced with more sophisticated logic
+  const words = content.toLowerCase().split(/\W+/);
+  const stopWords = new Set(['the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'a', 'an']);
+  const keywords = words
+    .filter(word => word.length > 3 && !stopWords.has(word))
+    .reduce((acc, word) => {
+      acc[word] = (acc[word] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+  return Object.entries(keywords)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 10)
+    .map(([word]) => word);
+}
