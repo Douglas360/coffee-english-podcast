@@ -57,18 +57,10 @@ export default function Editor() {
           )
         `)
         .eq('id', id)
-        .maybeSingle();
+        .single();
       
       if (error) throw error;
-      
-      // Transform the data to match PostWithAnalytics type
-      const postData = data as any;
-      const transformedPost: PostWithAnalytics = {
-        ...postData,
-        post_analytics: postData.post_analytics?.[0] || null
-      };
-      
-      return transformedPost;
+      return data as PostWithAnalytics;
     },
     enabled: isEditing
   });
@@ -84,7 +76,6 @@ export default function Editor() {
       return baseSlug;
     }
 
-    // Add timestamp to make slug unique
     const timestamp = new Date().getTime();
     return `${baseSlug}-${timestamp}`;
   };
@@ -141,7 +132,8 @@ export default function Editor() {
           slug: uniqueSlug,
           meta_keywords: data.meta_keywords,
           scheduled_for: data.scheduled_for?.toISOString(),
-          featured_image: data.featured_image
+          featured_image: data.featured_image,
+          updated_at: new Date().toISOString()
         })
         .eq('id', id)
         .select()
