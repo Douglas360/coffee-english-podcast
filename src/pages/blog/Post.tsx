@@ -3,11 +3,11 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink } from '@/components/ui/breadcrumb';
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card } from '@/components/ui/card';
-import { CalendarIcon, Clock, Facebook, Twitter, Linkedin, MessageSquare, ChevronRight } from 'lucide-react';
+import { CalendarIcon, Clock, Facebook, Twitter, Linkedin, MessageSquare } from 'lucide-react';
 import MDEditor from '@uiw/react-md-editor';
 
 export default function BlogPost() {
@@ -20,7 +20,7 @@ export default function BlogPost() {
         .from('posts')
         .select(`
           *,
-          profiles (
+          author:profiles!posts_author_id_fkey (
             username,
             avatar_url,
             full_name
@@ -99,13 +99,15 @@ export default function BlogPost() {
         {/* Breadcrumb */}
         <Breadcrumb className="mb-8">
           <BreadcrumbItem>
-            <BreadcrumbLink as={Link} to="/">Home</BreadcrumbLink>
+            <BreadcrumbLink href="/">Home</BreadcrumbLink>
           </BreadcrumbItem>
+          <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink as={Link} to="/blog">Blog</BreadcrumbLink>
+            <BreadcrumbLink href="/blog">Blog</BreadcrumbLink>
           </BreadcrumbItem>
+          <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink>{post.title}</BreadcrumbLink>
+            <span className="text-gray-600">{post.title}</span>
           </BreadcrumbItem>
         </Breadcrumb>
 
@@ -115,11 +117,11 @@ export default function BlogPost() {
             {/* Author and Meta Info */}
             <div className="flex items-center gap-4 mb-8 p-4 bg-white rounded-lg shadow-sm">
               <Avatar>
-                <AvatarImage src={post.profiles?.avatar_url} />
-                <AvatarFallback>{post.profiles?.full_name?.[0] || 'A'}</AvatarFallback>
+                <AvatarImage src={post.author?.avatar_url} />
+                <AvatarFallback>{post.author?.full_name?.[0] || 'A'}</AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-semibold">{post.profiles?.full_name || 'Anonymous'}</p>
+                <p className="font-semibold">{post.author?.full_name || 'Anonymous'}</p>
                 <div className="flex items-center gap-4 text-sm text-gray-500">
                   <span className="flex items-center gap-1">
                     <CalendarIcon className="w-4 h-4" />
