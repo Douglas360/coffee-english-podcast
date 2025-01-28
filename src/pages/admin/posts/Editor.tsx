@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,7 @@ export default function Editor() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const isEditing = !!id;
 
   const { data: session } = useQuery({
@@ -54,14 +55,11 @@ export default function Editor() {
           )
         `)
         .eq('id', id)
-        .single();
+        .maybeSingle();
       
       if (error) throw error;
       
-      return {
-        ...data,
-        post_analytics: data.post_analytics?.[0] || null
-      } as PostWithAnalytics;
+      return data as PostWithAnalytics;
     },
     enabled: isEditing
   });
@@ -107,6 +105,7 @@ export default function Editor() {
       return newPost;
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-posts'] });
       toast({
         title: "Success",
         description: "Post created successfully",
@@ -143,6 +142,7 @@ export default function Editor() {
       return updatedPost;
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-posts'] });
       toast({
         title: "Success",
         description: "Post updated successfully",
