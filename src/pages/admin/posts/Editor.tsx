@@ -39,7 +39,7 @@ export default function Editor() {
     }
   });
 
-  const { data: post, isLoading: isLoadingPost } = useQuery({
+  const { data: post, isLoading: isLoadingPost, error: postError } = useQuery({
     queryKey: ['post', id],
     queryFn: async () => {
       if (!id) return null;
@@ -58,7 +58,7 @@ export default function Editor() {
           )
         `)
         .eq('id', id)
-        .single();
+        .maybeSingle();
       
       if (error) {
         console.error('Error fetching post:', error);
@@ -68,6 +68,16 @@ export default function Editor() {
           variant: "destructive",
         });
         throw error;
+      }
+
+      if (!data) {
+        toast({
+          title: "Error",
+          description: "Post not found.",
+          variant: "destructive",
+        });
+        navigate('/admin/posts');
+        return null;
       }
       
       return data as PostWithAnalytics;
@@ -204,7 +214,6 @@ export default function Editor() {
         description: 'The AI-generated content has been added to the editor.',
       });
     } catch (error: any) {
-      // Check for OpenAI quota exceeded error
       if (error.message?.includes('insufficient_quota') || error.body?.includes('insufficient_quota')) {
         toast({
           title: "OpenAI Quota Exceeded",
@@ -221,6 +230,28 @@ export default function Editor() {
     }
   };
 
+  if (isLoadingPost && isEditing) {
+    return (
+      <div className="w-full h-96 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-4 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (postError) {
+    return (
+      <div className="w-full h-96 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-800">Error Loading Post</h2>
+          <p className="text-gray-600 mt-2">Failed to load post data. Please try again.</p>
+          <Button onClick={() => navigate('/admin/posts')} className="mt-4">
+            Go Back
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   const defaultValues = post ? {
     title: post.title,
     content: post.content,
@@ -233,14 +264,6 @@ export default function Editor() {
     status: post.status as 'draft' | 'published' || 'draft',
     featured_image: post.featured_image
   } : undefined;
-
-  if (isLoadingPost && isEditing) {
-    return (
-      <div className="w-full h-96 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-4 border-primary"></div>
-      </div>
-    );
-  }
 
   return (
     <div className="container mx-auto p-6">
@@ -269,7 +292,7 @@ export default function Editor() {
         </div>
       </div>
 
-      {post && post.post_analytics && (
+      {post?.post_analytics && (
         <div className="mb-6 p-4 bg-gray-50 rounded-lg">
           <h2 className="text-lg font-semibold mb-2">Post Statistics</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
