@@ -5,6 +5,7 @@ import Auth from './pages/Auth';
 import AdminIndex from './pages/admin/Index';
 import PostsIndex from './pages/admin/posts/Index';
 import PostEditor from './pages/admin/posts/Editor';
+import Settings from './pages/admin/Settings';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminLayout from './components/layouts/AdminLayout';
 
@@ -50,6 +51,13 @@ function App() {
             <ProtectedRoute>
               <AdminLayout>
                 <PostEditor />
+              </AdminLayout>
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/settings" element={
+            <ProtectedRoute>
+              <AdminLayout>
+                <Settings />
               </AdminLayout>
             </ProtectedRoute>
           } />
