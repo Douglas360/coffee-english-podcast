@@ -55,7 +55,9 @@ export default function Editor() {
             bounce_rate,
             created_at,
             updated_at
-          )
+          ),
+          author_id,
+          status
         `)
         .eq('id', id)
         .maybeSingle();
