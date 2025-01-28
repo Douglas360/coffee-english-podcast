@@ -1,17 +1,19 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { Select } from "@/components/ui/select";
 import {
+  Form,
+  FormControl,
   FormField,
   FormItem,
   FormLabel,
-  FormControl,
-  FormDescription,
+  FormMessage,
 } from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface AIPostGeneratorProps {
   onPostGenerated: (post: {
@@ -26,130 +28,158 @@ interface AIPostGeneratorProps {
   }) => void;
 }
 
+type FormData = {
+  topic: string;
+  tone: string;
+  length: string;
+  targetAudience: string;
+  additionalInstructions: string;
+};
+
 export default function AIPostGenerator({ onPostGenerated }: AIPostGeneratorProps) {
-  const [topic, setTopic] = useState('');
-  const [tone, setTone] = useState('professional');
-  const [length, setLength] = useState('medium');
-  const [targetAudience, setTargetAudience] = useState('general');
-  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const form = useForm<FormData>({
+    defaultValues: {
+      topic: "",
+      tone: "professional",
+      length: "medium",
+      targetAudience: "general",
+      additionalInstructions: "",
+    },
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!topic) {
-      toast({
-        title: "Error",
-        description: "Please enter a topic",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsLoading(true);
+  const generatePost = async (data: FormData) => {
     try {
-      const { data, error } = await supabase.functions.invoke('generate-blog-post', {
-        body: { 
-          topic,
-          tone,
-          length,
-          targetAudience
-        }
+      const { data: response, error } = await supabase.functions.invoke('generate-blog-post', {
+        body: data
       });
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
-      onPostGenerated({
-        ...data,
-        title: data.title || topic,
+      onPostGenerated(response);
+      toast({
+        title: "Success",
+        description: "Post generated successfully!",
       });
-      
     } catch (error: any) {
-      console.error('Error generating post:', error);
       toast({
         title: "Error",
-        description: "Failed to generate post. Please try again.",
+        description: error.message || "Failed to generate post",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <FormItem>
-        <FormLabel>Topic</FormLabel>
-        <FormControl>
-          <Input
-            placeholder="Enter your post topic..."
-            value={topic}
-            onChange={(e) => setTopic(e.target.value)}
-            disabled={isLoading}
-          />
-        </FormControl>
-        <FormDescription>
-          The main subject of your blog post
-        </FormDescription>
-      </FormItem>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(generatePost)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="topic"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Topic</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter the main topic or subject" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-      <FormItem>
-        <FormLabel>Tone of Voice</FormLabel>
-        <FormControl>
-          <select
-            className="w-full p-2 border rounded"
-            value={tone}
-            onChange={(e) => setTone(e.target.value)}
-            disabled={isLoading}
-          >
-            <option value="professional">Professional</option>
-            <option value="casual">Casual</option>
-            <option value="friendly">Friendly</option>
-            <option value="humorous">Humorous</option>
-            <option value="formal">Formal</option>
-          </select>
-        </FormControl>
-      </FormItem>
+        <FormField
+          control={form.control}
+          name="tone"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Tone of Voice</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select tone" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="professional">Professional</SelectItem>
+                  <SelectItem value="casual">Casual</SelectItem>
+                  <SelectItem value="humorous">Humorous</SelectItem>
+                  <SelectItem value="formal">Formal</SelectItem>
+                  <SelectItem value="technical">Technical</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-      <FormItem>
-        <FormLabel>Article Length</FormLabel>
-        <FormControl>
-          <select
-            className="w-full p-2 border rounded"
-            value={length}
-            onChange={(e) => setLength(e.target.value)}
-            disabled={isLoading}
-          >
-            <option value="short">Short (~300 words)</option>
-            <option value="medium">Medium (~600 words)</option>
-            <option value="long">Long (~1000 words)</option>
-          </select>
-        </FormControl>
-      </FormItem>
+        <FormField
+          control={form.control}
+          name="length"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Article Length</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select length" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="short">Short (~500 words)</SelectItem>
+                  <SelectItem value="medium">Medium (~1000 words)</SelectItem>
+                  <SelectItem value="long">Long (~2000 words)</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-      <FormItem>
-        <FormLabel>Target Audience</FormLabel>
-        <FormControl>
-          <select
-            className="w-full p-2 border rounded"
-            value={targetAudience}
-            onChange={(e) => setTargetAudience(e.target.value)}
-            disabled={isLoading}
-          >
-            <option value="general">General</option>
-            <option value="beginners">Beginners</option>
-            <option value="intermediate">Intermediate</option>
-            <option value="advanced">Advanced</option>
-            <option value="technical">Technical</option>
-          </select>
-        </FormControl>
-      </FormItem>
+        <FormField
+          control={form.control}
+          name="targetAudience"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Target Audience</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select audience" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="general">General</SelectItem>
+                  <SelectItem value="technical">Technical</SelectItem>
+                  <SelectItem value="beginners">Beginners</SelectItem>
+                  <SelectItem value="experts">Experts</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-      <Button type="submit" disabled={isLoading} className="w-full">
-        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-        Generate Post
-      </Button>
-    </form>
+        <FormField
+          control={form.control}
+          name="additionalInstructions"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Additional Instructions</FormLabel>
+              <FormControl>
+                <Textarea 
+                  placeholder="Any specific requirements or focus areas..."
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <Button type="submit" className="w-full">
+          Generate Post
+        </Button>
+      </form>
+    </Form>
   );
 }
