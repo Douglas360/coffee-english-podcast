@@ -20,7 +20,7 @@ type PostAnalytics = Pick<Tables<'post_analytics'>,
 >;
 
 type PostWithAnalytics = Tables<'posts'> & {
-  post_analytics: PostAnalytics | null;
+  post_analytics: PostAnalytics[] | null;
 };
 
 export default function Editor() {
@@ -292,17 +292,17 @@ export default function Editor() {
         </div>
       </div>
 
-      {post?.post_analytics && (
+      {post?.post_analytics?.[0] && (
         <div className="mb-6 p-4 bg-gray-50 rounded-lg">
           <h2 className="text-lg font-semibold mb-2">Post Statistics</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <p className="text-sm text-gray-600">Views</p>
-              <p className="text-2xl font-bold">{post.post_analytics.views || 0}</p>
+              <p className="text-2xl font-bold">{post.post_analytics[0].views || 0}</p>
             </div>
             <div>
               <p className="text-sm text-gray-600">Unique Views</p>
-              <p className="text-2xl font-bold">{post.post_analytics.unique_views || 0}</p>
+              <p className="text-2xl font-bold">{post.post_analytics[0].unique_views || 0}</p>
             </div>
             <div>
               <p className="text-sm text-gray-600">SEO Score</p>
