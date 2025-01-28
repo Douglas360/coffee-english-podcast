@@ -66,16 +66,35 @@ export default function Editor() {
     enabled: isEditing
   });
 
+  const generateUniqueSlug = async (baseSlug: string): Promise<string> => {
+    const { data: existingPost } = await supabase
+      .from('posts')
+      .select('id')
+      .eq('slug', baseSlug)
+      .single();
+
+    if (!existingPost || (isEditing && existingPost.id === id)) {
+      return baseSlug;
+    }
+
+    // Add timestamp to make slug unique
+    const timestamp = new Date().getTime();
+    return `${baseSlug}-${timestamp}`;
+  };
+
   const createPost = useMutation({
     mutationFn: async (data: PostFormData) => {
       if (!session?.user?.id) {
         throw new Error('User must be logged in to create a post');
       }
 
+      const uniqueSlug = await generateUniqueSlug(data.slug);
+
       const { data: newPost, error } = await supabase
         .from('posts')
         .insert([{
           ...data,
+          slug: uniqueSlug,
           author_id: session.user.id,
           meta_keywords: data.meta_keywords,
           scheduled_for: data.scheduled_for?.toISOString(),
@@ -105,10 +124,13 @@ export default function Editor() {
 
   const updatePost = useMutation({
     mutationFn: async (data: PostFormData) => {
+      const uniqueSlug = await generateUniqueSlug(data.slug);
+
       const { data: updatedPost, error } = await supabase
         .from('posts')
         .update({
           ...data,
+          slug: uniqueSlug,
           meta_keywords: data.meta_keywords,
           scheduled_for: data.scheduled_for?.toISOString(),
           featured_image: data.featured_image
