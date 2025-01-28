@@ -10,15 +10,17 @@ import { useToast } from "@/hooks/use-toast";
 import AIPostGenerator from '@/components/admin/AIPostGenerator';
 import { PostForm, PostFormData } from "@/components/admin/posts/PostForm";
 
+type PostAnalytics = Pick<Tables<'post_analytics'>, 
+  'views' | 
+  'unique_views' | 
+  'avg_time_on_page' | 
+  'bounce_rate' | 
+  'created_at' | 
+  'updated_at'
+>;
+
 type PostWithAnalytics = Tables<'posts'> & {
-  post_analytics: Pick<Tables<'post_analytics'>, 
-    'views' | 
-    'unique_views' | 
-    'avg_time_on_page' | 
-    'bounce_rate' | 
-    'created_at' | 
-    'updated_at'
-  > | null;
+  post_analytics: PostAnalytics | null;
 };
 
 export default function Editor() {
@@ -59,7 +61,14 @@ export default function Editor() {
       
       if (error) throw error;
       
-      return data as PostWithAnalytics;
+      // Transform the data to match PostWithAnalytics type
+      const postData = data as any;
+      const transformedPost: PostWithAnalytics = {
+        ...postData,
+        post_analytics: postData.post_analytics?.[0] || null
+      };
+      
+      return transformedPost;
     },
     enabled: isEditing
   });
