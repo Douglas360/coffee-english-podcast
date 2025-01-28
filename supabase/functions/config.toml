@@ -1,0 +1,3 @@
+project_id = "mlpyhxmsofabdkdkslfs"
+[functions.generate-blog-post]
+verify_jwt = false

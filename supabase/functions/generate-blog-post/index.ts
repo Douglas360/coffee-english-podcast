@@ -7,39 +7,20 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { title, tone = 'formal', length = 'medium' } = await req.json();
+    const { topic } = await req.json();
+    console.log('Generating blog post for topic:', topic);
 
-    // First, generate an optimized title
-    const titleResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are an SEO expert. Generate an engaging, SEO-optimized title based on the given topic. The title should be catchy and under 60 characters.'
-          },
-          { role: 'user', content: `Generate a title based on this topic: ${title}` }
-        ],
-      }),
-    });
+    if (!topic) {
+      throw new Error('Topic is required');
+    }
 
-    const titleData = await titleResponse.json();
-    const optimizedTitle = titleData.choices[0].message.content.replace(/["']/g, '');
-
-    // Generate the main content
-    const contentPrompt = `Create a comprehensive blog post about "${optimizedTitle}" with the following specifications:
-    - Use a ${tone} tone
-    - Length: ${length}
+    const contentPrompt = `Create a comprehensive blog post about "${topic}" with the following specifications:
     - Include a compelling excerpt (max 160 characters)
     - Structure the content with proper markdown headings (H2, H3)
     - Include bullet points for key takeaways
@@ -60,7 +41,8 @@ serve(async (req) => {
     CONTENT:
     [main content here]`;
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    // Generate content using OpenAI
+    const contentResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
@@ -75,8 +57,10 @@ serve(async (req) => {
       }),
     });
 
-    const data = await response.json();
-    const generatedContent = data.choices[0].message.content;
+    const contentData = await contentResponse.json();
+    console.log('OpenAI response received');
+    
+    const generatedContent = contentData.choices[0].message.content;
 
     // Parse the different sections
     const excerpt = generatedContent.match(/EXCERPT:\n(.*?)\n\nMETA_DESCRIPTION/s)?.[1].trim();
@@ -85,6 +69,7 @@ serve(async (req) => {
     const content = generatedContent.match(/CONTENT:\n(.*)/s)?.[1].trim();
 
     // Generate image using DALL-E
+    console.log('Generating image with prompt:', imagePrompt);
     const imageResponse = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: {
@@ -101,9 +86,10 @@ serve(async (req) => {
 
     const imageData = await imageResponse.json();
     const imageUrl = imageData.data?.[0]?.url;
+    console.log('Image generated successfully');
 
     // Generate slug from title
-    const slug = optimizedTitle
+    const slug = topic
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '');
@@ -111,15 +97,30 @@ serve(async (req) => {
     // Get current date for scheduling
     const scheduledDate = new Date().toISOString();
 
+    // Extract keywords from content for SEO
+    const words = content.toLowerCase().split(/\W+/);
+    const stopWords = new Set(['the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'a', 'an']);
+    const keywords = words
+      .filter(word => word.length > 3 && !stopWords.has(word))
+      .reduce((acc: Record<string, number>, word: string) => {
+        acc[word] = (acc[word] || 0) + 1;
+        return acc;
+      }, {});
+
+    const suggestedKeywords = Object.entries(keywords)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 10)
+      .map(([word]) => word);
+
     const result = {
-      title: optimizedTitle,
+      title: topic,
       content,
       excerpt,
       metaDescription,
       imageUrl,
       slug,
       scheduledDate,
-      suggestedKeywords: extractKeywords(content),
+      suggestedKeywords,
     };
 
     return new Response(JSON.stringify(result), {
@@ -133,19 +134,3 @@ serve(async (req) => {
     });
   }
 });
-
-function extractKeywords(content: string): string[] {
-  const words = content.toLowerCase().split(/\W+/);
-  const stopWords = new Set(['the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'a', 'an']);
-  const keywords = words
-    .filter(word => word.length > 3 && !stopWords.has(word))
-    .reduce((acc, word) => {
-      acc[word] = (acc[word] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
-  return Object.entries(keywords)
-    .sort(([, a], [, b]) => b - a)
-    .slice(0, 10)
-    .map(([word]) => word);
-}
