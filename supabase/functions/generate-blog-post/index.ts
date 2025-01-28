@@ -13,36 +13,40 @@ serve(async (req) => {
   }
 
   try {
-    const { topic } = await req.json();
-    console.log('Generating blog post for topic:', topic);
+    const { topic, tone, length, targetAudience, additionalInstructions } = await req.json();
+    console.log('Received request with:', { topic, tone, length, targetAudience, additionalInstructions });
 
     if (!topic) {
       throw new Error('Topic is required');
     }
 
     const contentPrompt = `Create a comprehensive blog post about "${topic}" with the following specifications:
-    - Include a compelling excerpt (max 160 characters)
-    - Structure the content with proper markdown headings (H2, H3)
-    - Include bullet points for key takeaways
-    - Optimize for SEO with relevant keywords
-    - Include a detailed meta description
-    - Suggest an image prompt that captures the essence of the post
+    - Use a ${tone} tone of voice
+    - Create a ${length} length article
+    - Target audience: ${targetAudience}
+    - Additional instructions: ${additionalInstructions || 'None'}
     
     Format the response in this exact structure:
+    TITLE:
+    [title here]
+    
     EXCERPT:
-    [excerpt here]
+    [excerpt here - max 160 characters]
     
     META_DESCRIPTION:
-    [meta description here]
+    [meta description here - max 160 characters]
     
     IMAGE_PROMPT:
     [image generation prompt here]
     
     CONTENT:
-    [main content here]`;
+    [main content here]
+    
+    KEYWORDS:
+    [comma-separated list of relevant keywords]`;
 
-    // Generate content using OpenAI
-    const contentResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+    console.log('Sending request to OpenAI');
+    const openAiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
@@ -57,19 +61,32 @@ serve(async (req) => {
       }),
     });
 
-    const contentData = await contentResponse.json();
-    console.log('OpenAI response received');
-    
-    const generatedContent = contentData.choices[0].message.content;
+    if (!openAiResponse.ok) {
+      const error = await openAiResponse.text();
+      console.error('OpenAI API error:', error);
+      throw new Error(`OpenAI API error: ${error}`);
+    }
+
+    const openAiData = await openAiResponse.json();
+    console.log('Received response from OpenAI');
+
+    if (!openAiData.choices?.[0]?.message?.content) {
+      console.error('Invalid OpenAI response:', openAiData);
+      throw new Error('Invalid response from OpenAI');
+    }
+
+    const generatedContent = openAiData.choices[0].message.content;
 
     // Parse the different sections
+    const title = generatedContent.match(/TITLE:\n(.*?)\n\nEXCERPT/s)?.[1].trim();
     const excerpt = generatedContent.match(/EXCERPT:\n(.*?)\n\nMETA_DESCRIPTION/s)?.[1].trim();
     const metaDescription = generatedContent.match(/META_DESCRIPTION:\n(.*?)\n\nIMAGE_PROMPT/s)?.[1].trim();
     const imagePrompt = generatedContent.match(/IMAGE_PROMPT:\n(.*?)\n\nCONTENT/s)?.[1].trim();
-    const content = generatedContent.match(/CONTENT:\n(.*)/s)?.[1].trim();
+    const content = generatedContent.match(/CONTENT:\n(.*?)\n\nKEYWORDS/s)?.[1].trim();
+    const keywords = generatedContent.match(/KEYWORDS:\n(.*)/s)?.[1].trim().split(',').map(k => k.trim());
 
     // Generate image using DALL-E
-    console.log('Generating image with prompt:', imagePrompt);
+    console.log('Generating image with DALL-E');
     const imageResponse = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: {
@@ -84,12 +101,22 @@ serve(async (req) => {
       }),
     });
 
+    if (!imageResponse.ok) {
+      const error = await imageResponse.text();
+      console.error('DALL-E API error:', error);
+      throw new Error(`DALL-E API error: ${error}`);
+    }
+
     const imageData = await imageResponse.json();
     const imageUrl = imageData.data?.[0]?.url;
-    console.log('Image generated successfully');
+
+    if (!imageUrl) {
+      console.error('Invalid DALL-E response:', imageData);
+      throw new Error('Failed to generate image');
+    }
 
     // Generate slug from title
-    const slug = topic
+    const slug = title
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '');
@@ -97,40 +124,32 @@ serve(async (req) => {
     // Get current date for scheduling
     const scheduledDate = new Date().toISOString();
 
-    // Extract keywords from content for SEO
-    const words = content.toLowerCase().split(/\W+/);
-    const stopWords = new Set(['the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'a', 'an']);
-    const keywords = words
-      .filter(word => word.length > 3 && !stopWords.has(word))
-      .reduce((acc: Record<string, number>, word: string) => {
-        acc[word] = (acc[word] || 0) + 1;
-        return acc;
-      }, {});
-
-    const suggestedKeywords = Object.entries(keywords)
-      .sort(([, a], [, b]) => b - a)
-      .slice(0, 10)
-      .map(([word]) => word);
-
     const result = {
-      title: topic,
+      title,
       content,
       excerpt,
       metaDescription,
       imageUrl,
       slug,
       scheduledDate,
-      suggestedKeywords,
+      suggestedKeywords: keywords,
     };
 
+    console.log('Successfully generated post');
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
     console.error('Error in generate-blog-post function:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({ 
+        error: error.message || 'An unexpected error occurred',
+        details: error.stack
+      }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    );
   }
 });
