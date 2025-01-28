@@ -43,6 +43,7 @@ export default function Editor() {
     queryKey: ['post', id],
     queryFn: async () => {
       if (!id) return null;
+      
       const { data, error } = await supabase
         .from('posts')
         .select(`
@@ -57,19 +58,19 @@ export default function Editor() {
           )
         `)
         .eq('id', id)
-        .maybeSingle();
+        .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching post:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load post data. Please try again.",
+          variant: "destructive",
+        });
+        throw error;
+      }
       
-      if (!data) return null;
-
-      // Transform the data to match PostWithAnalytics type
-      const transformedData: PostWithAnalytics = {
-        ...data,
-        post_analytics: data.post_analytics?.[0] || null
-      };
-      
-      return transformedData;
+      return data as PostWithAnalytics;
     },
     enabled: isEditing
   });
@@ -168,7 +169,7 @@ export default function Editor() {
     }
   });
 
-  const handleAIGenerated = (generatedPost: {
+  const handleAIGenerated = async (generatedPost: {
     title: string;
     content: string;
     excerpt: string;
@@ -178,29 +179,46 @@ export default function Editor() {
     scheduledDate: string;
     suggestedKeywords: string[];
   }) => {
-    const formData: PostFormData = {
-      title: generatedPost.title,
-      content: generatedPost.content,
-      excerpt: generatedPost.excerpt,
-      meta_description: generatedPost.metaDescription,
-      featured_image: generatedPost.imageUrl,
-      slug: generatedPost.slug,
-      scheduled_for: new Date(generatedPost.scheduledDate),
-      meta_keywords: generatedPost.suggestedKeywords,
-      status: 'draft',
-      meta_title: generatedPost.title
-    };
-    
-    if (isEditing) {
-      updatePost.mutate(formData);
-    } else {
-      createPost.mutate(formData);
+    try {
+      const formData: PostFormData = {
+        title: generatedPost.title,
+        content: generatedPost.content,
+        excerpt: generatedPost.excerpt,
+        meta_description: generatedPost.metaDescription,
+        featured_image: generatedPost.imageUrl,
+        slug: generatedPost.slug,
+        scheduled_for: new Date(generatedPost.scheduledDate),
+        meta_keywords: generatedPost.suggestedKeywords,
+        status: 'draft',
+        meta_title: generatedPost.title
+      };
+      
+      if (isEditing) {
+        updatePost.mutate(formData);
+      } else {
+        createPost.mutate(formData);
+      }
+      
+      toast({
+        title: 'Post Generated',
+        description: 'The AI-generated content has been added to the editor.',
+      });
+    } catch (error: any) {
+      // Check for OpenAI quota exceeded error
+      if (error.message?.includes('insufficient_quota') || error.body?.includes('insufficient_quota')) {
+        toast({
+          title: "OpenAI Quota Exceeded",
+          description: "Your OpenAI API quota has been exceeded. Please check your plan and billing details.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to generate post content. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
-    
-    toast({
-      title: 'Post Generated',
-      description: 'The AI-generated content has been added to the editor.',
-    });
   };
 
   const defaultValues = post ? {
@@ -215,6 +233,14 @@ export default function Editor() {
     status: post.status as 'draft' | 'published' || 'draft',
     featured_image: post.featured_image
   } : undefined;
+
+  if (isLoadingPost && isEditing) {
+    return (
+      <div className="w-full h-96 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-4 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-6">

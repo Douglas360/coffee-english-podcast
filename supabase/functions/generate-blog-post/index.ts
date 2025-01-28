@@ -64,6 +64,12 @@ serve(async (req) => {
     if (!openAiResponse.ok) {
       const error = await openAiResponse.text();
       console.error('OpenAI API error:', error);
+      
+      // Check for quota exceeded error
+      if (error.includes('insufficient_quota')) {
+        throw new Error('OpenAI API quota exceeded. Please check your plan and billing details.');
+      }
+      
       throw new Error(`OpenAI API error: ${error}`);
     }
 
@@ -84,6 +90,10 @@ serve(async (req) => {
     const imagePrompt = generatedContent.match(/IMAGE_PROMPT:\n(.*?)\n\nCONTENT/s)?.[1].trim();
     const content = generatedContent.match(/CONTENT:\n(.*?)\n\nKEYWORDS/s)?.[1].trim();
     const keywords = generatedContent.match(/KEYWORDS:\n(.*)/s)?.[1].trim().split(',').map(k => k.trim());
+
+    if (!title || !content) {
+      throw new Error('Failed to parse generated content');
+    }
 
     // Generate image using DALL-E
     console.log('Generating image with DALL-E');
