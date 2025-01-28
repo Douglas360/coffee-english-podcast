@@ -6,6 +6,7 @@ import AdminIndex from './pages/admin/Index';
 import PostsIndex from './pages/admin/posts/Index';
 import PostEditor from './pages/admin/posts/Editor';
 import Settings from './pages/admin/Settings';
+import BlogPost from './pages/blog/Post';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminLayout from './components/layouts/AdminLayout';
 
@@ -26,6 +27,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/blog/:id" element={<BlogPost />} />
           <Route path="/admin" element={
             <ProtectedRoute>
               <AdminLayout>

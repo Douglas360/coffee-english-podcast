@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { CalendarIcon, Clock } from "lucide-react";
+import { format } from "date-fns";
+import { Link } from "react-router-dom";
 
 export const Blog = () => {
   const { data: posts, isLoading } = useQuery({
@@ -85,11 +87,13 @@ export const Blog = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center text-sm text-gray-500">
                     <CalendarIcon className="w-4 h-4 mr-1 text-primary" />
-                    {new Date(post.published_at).toLocaleDateString('pt-BR')}
+                    {post.published_at ? format(new Date(post.published_at), 'dd MMM yyyy') : 'Not published'}
                   </div>
-                  <Button variant="outline" className="hover:bg-primary hover:text-white transition-all">
-                    Ler mais
-                  </Button>
+                  <Link to={`/blog/${post.id}`}>
+                    <Button variant="outline" className="hover:bg-primary hover:text-white transition-all">
+                      Ler mais
+                    </Button>
+                  </Link>
                 </div>
               </div>
             </Card>
