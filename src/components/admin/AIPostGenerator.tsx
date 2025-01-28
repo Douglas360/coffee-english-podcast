@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AIPostGeneratorProps {
   onPostGenerated: (post: {
@@ -35,27 +36,22 @@ export default function AIPostGenerator({ onPostGenerated }: AIPostGeneratorProp
 
     setIsLoading(true);
     try {
-      const response = await fetch('/api/generate-blog-post', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ topic }),
+      const { data, error } = await supabase.functions.invoke('generate-blog-post', {
+        body: { topic }
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to generate post');
+      if (error) {
+        throw error;
       }
 
-      const data = await response.json();
-      
       // Use the topic as the title
       onPostGenerated({
         ...data,
         title: topic,
       });
       
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Error generating post:', error);
       toast({
         title: "Error",
         description: "Failed to generate post. Please try again.",
