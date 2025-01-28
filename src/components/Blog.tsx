@@ -91,7 +91,7 @@ export const Blog = () => {
                   </div>
                   <Link to={`/blog/${post.id}`}>
                     <Button variant="outline" className="hover:bg-primary hover:text-white transition-all">
-                      Ler mais
+                     Read more
                     </Button>
                   </Link>
                 </div>
