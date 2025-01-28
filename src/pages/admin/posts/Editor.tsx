@@ -39,7 +39,7 @@ export default function Editor() {
     }
   });
 
-  const { data: post, isLoading: isLoadingPost, error: postError } = useQuery({
+  const { data: post, isLoading: isLoadingPost } = useQuery({
     queryKey: ['post', id],
     queryFn: async () => {
       if (!id) return null;
@@ -72,8 +72,8 @@ export default function Editor() {
 
       if (!data) {
         toast({
-          title: "Error",
-          description: "Post not found.",
+          title: "Post Not Found",
+          description: "The requested post could not be found.",
           variant: "destructive",
         });
         navigate('/admin/posts');
@@ -82,7 +82,8 @@ export default function Editor() {
       
       return data as PostWithAnalytics;
     },
-    enabled: isEditing
+    enabled: isEditing,
+    retry: false
   });
 
   const generateUniqueSlug = async (baseSlug: string): Promise<string> => {
@@ -238,20 +239,6 @@ export default function Editor() {
     );
   }
 
-  if (postError) {
-    return (
-      <div className="w-full h-96 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-800">Error Loading Post</h2>
-          <p className="text-gray-600 mt-2">Failed to load post data. Please try again.</p>
-          <Button onClick={() => navigate('/admin/posts')} className="mt-4">
-            Go Back
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   const defaultValues = post ? {
     title: post.title,
     content: post.content,
@@ -261,7 +248,7 @@ export default function Editor() {
     meta_description: post.meta_description || "",
     meta_keywords: post.meta_keywords || [],
     scheduled_for: post.scheduled_for ? new Date(post.scheduled_for) : null,
-    status: post.status as 'draft' | 'published' || 'draft',
+    status: post.status as 'draft' | 'published',
     featured_image: post.featured_image
   } : undefined;
 
