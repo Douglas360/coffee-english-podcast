@@ -79,8 +79,28 @@ export default function BlogPost() {
   const shareUrl = window.location.href;
   const shareText = encodeURIComponent(post.title);
 
+  // Add schema markup
+  const articleSchema = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": post.title,
+    "description": post.excerpt,
+    "image": post.featured_image,
+    "datePublished": post.published_at,
+    "dateModified": post.updated_at,
+    "author": {
+      "@type": "Person",
+      "name": post.author?.full_name || "Anonymous"
+    }
+  };
+
   return (
     <article className="min-h-screen bg-gray-50">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+      />
+      
       {/* Hero Section with Featured Image */}
       <div className="relative h-[60vh] min-h-[400px]">
         <img

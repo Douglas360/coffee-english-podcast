@@ -18,6 +18,7 @@ import { PostMetadata } from "./PostMetadata";
 import { PostScheduling } from "./PostScheduling";
 import { PostSEO } from "./PostSEO";
 import { PostPreview } from "./PostPreview";
+import { SEOAnalysis } from "./SEOAnalysis";
 
 export type PostFormData = {
   title: string;
@@ -54,68 +55,89 @@ export const PostForm = ({ defaultValues, onSubmit, isLoading }: PostFormProps) 
     }
   });
 
+  const watchContent = form.watch('content');
+  const watchTitle = form.watch('title');
+  const watchMetaDescription = form.watch('meta_description');
+  const watchMetaKeywords = form.watch('meta_keywords');
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Title</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-6">
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Title</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-        <FormField
-          control={form.control}
-          name="content"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Content</FormLabel>
-              <FormControl>
-                <MDEditor
-                  value={field.value}
-                  onChange={(value) => field.onChange(value || '')}
-                  preview="edit"
-                  previewOptions={{
-                    rehypePlugins: [[rehypeSanitize]],
-                  }}
-                  height={400}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+            <FormField
+              control={form.control}
+              name="content"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Content</FormLabel>
+                  <FormControl>
+                    <MDEditor
+                      value={field.value}
+                      onChange={(value) => field.onChange(value || '')}
+                      preview="edit"
+                      previewOptions={{
+                        rehypePlugins: [[rehypeSanitize]],
+                      }}
+                      height={400}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-        <ImageUpload
-          previewImage={form.watch('featured_image')}
-          onImageUploaded={(url) => form.setValue('featured_image', url)}
-        />
+            <ImageUpload
+              previewImage={form.watch('featured_image')}
+              onImageUploaded={(url) => form.setValue('featured_image', url)}
+            />
 
-        <FormField
-          control={form.control}
-          name="excerpt"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Excerpt</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+            <FormField
+              control={form.control}
+              name="excerpt"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Excerpt</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-        <PostMetadata form={form} />
-        <PostScheduling form={form} />
-        <PostSEO form={form} />
-        <PostPreview form={form} />
+            <PostMetadata form={form} />
+            <PostScheduling form={form} />
+            <PostSEO form={form} />
+            <PostPreview form={form} />
+          </div>
+
+          <div className="lg:col-span-1">
+            <div className="sticky top-6">
+              <SEOAnalysis
+                postId={defaultValues?.slug || ''}
+                content={watchContent}
+                title={watchTitle}
+                metaDescription={watchMetaDescription}
+                keywords={watchMetaKeywords}
+              />
+            </div>
+          </div>
+        </div>
 
         <div className="flex justify-end">
           <Button type="submit" disabled={isLoading}>

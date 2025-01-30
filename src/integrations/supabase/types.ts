@@ -9,6 +9,36 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      backlinks: {
+        Row: {
+          domain_authority: number | null
+          first_seen_at: string | null
+          id: string
+          last_checked_at: string | null
+          source_url: string
+          status: string | null
+          target_url: string
+        }
+        Insert: {
+          domain_authority?: number | null
+          first_seen_at?: string | null
+          id?: string
+          last_checked_at?: string | null
+          source_url: string
+          status?: string | null
+          target_url: string
+        }
+        Update: {
+          domain_authority?: number | null
+          first_seen_at?: string | null
+          id?: string
+          last_checked_at?: string | null
+          source_url?: string
+          status?: string | null
+          target_url?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string | null
@@ -67,6 +97,41 @@ export type Database = {
             columns: ["post_id"]
             isOneToOne: false
             referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_clusters: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          main_keyword_id: string | null
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          main_keyword_id?: string | null
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          main_keyword_id?: string | null
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_clusters_main_keyword_id_fkey"
+            columns: ["main_keyword_id"]
+            isOneToOne: false
+            referencedRelation: "seo_keywords"
             referencedColumns: ["id"]
           },
         ]
@@ -240,6 +305,39 @@ export type Database = {
           },
         ]
       }
+      post_keywords: {
+        Row: {
+          is_primary: boolean | null
+          keyword_id: string
+          post_id: string
+        }
+        Insert: {
+          is_primary?: boolean | null
+          keyword_id: string
+          post_id: string
+        }
+        Update: {
+          is_primary?: boolean | null
+          keyword_id?: string
+          post_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_keywords_keyword_id_fkey"
+            columns: ["keyword_id"]
+            isOneToOne: false
+            referencedRelation: "seo_keywords"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_keywords_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       post_likes: {
         Row: {
           created_at: string | null
@@ -322,15 +420,20 @@ export type Database = {
         Row: {
           author_id: string | null
           category_id: string | null
+          cluster_id: string | null
           comments_count: number | null
           content: string
           created_at: string | null
           excerpt: string | null
           featured_image: string | null
           featured_video: string | null
+          has_faq_schema: boolean | null
+          has_infographic: boolean | null
+          has_video: boolean | null
           id: string
           is_draft: boolean | null
           is_featured: boolean | null
+          keyword_density: number | null
           last_edited_at: string | null
           last_edited_by: string | null
           likes_count: number | null
@@ -338,6 +441,7 @@ export type Database = {
           meta_keywords: string[] | null
           meta_title: string | null
           published_at: string | null
+          readability_score: number | null
           reading_time: number | null
           scheduled_for: string | null
           seo_description: string | null
@@ -353,15 +457,20 @@ export type Database = {
         Insert: {
           author_id?: string | null
           category_id?: string | null
+          cluster_id?: string | null
           comments_count?: number | null
           content: string
           created_at?: string | null
           excerpt?: string | null
           featured_image?: string | null
           featured_video?: string | null
+          has_faq_schema?: boolean | null
+          has_infographic?: boolean | null
+          has_video?: boolean | null
           id?: string
           is_draft?: boolean | null
           is_featured?: boolean | null
+          keyword_density?: number | null
           last_edited_at?: string | null
           last_edited_by?: string | null
           likes_count?: number | null
@@ -369,6 +478,7 @@ export type Database = {
           meta_keywords?: string[] | null
           meta_title?: string | null
           published_at?: string | null
+          readability_score?: number | null
           reading_time?: number | null
           scheduled_for?: string | null
           seo_description?: string | null
@@ -384,15 +494,20 @@ export type Database = {
         Update: {
           author_id?: string | null
           category_id?: string | null
+          cluster_id?: string | null
           comments_count?: number | null
           content?: string
           created_at?: string | null
           excerpt?: string | null
           featured_image?: string | null
           featured_video?: string | null
+          has_faq_schema?: boolean | null
+          has_infographic?: boolean | null
+          has_video?: boolean | null
           id?: string
           is_draft?: boolean | null
           is_featured?: boolean | null
+          keyword_density?: number | null
           last_edited_at?: string | null
           last_edited_by?: string | null
           likes_count?: number | null
@@ -400,6 +515,7 @@ export type Database = {
           meta_keywords?: string[] | null
           meta_title?: string | null
           published_at?: string | null
+          readability_score?: number | null
           reading_time?: number | null
           scheduled_for?: string | null
           seo_description?: string | null
@@ -425,6 +541,13 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "posts_cluster_id_fkey"
+            columns: ["cluster_id"]
+            isOneToOne: false
+            referencedRelation: "content_clusters"
             referencedColumns: ["id"]
           },
           {
@@ -552,6 +675,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      seo_keywords: {
+        Row: {
+          created_at: string | null
+          difficulty_score: number | null
+          id: string
+          keyword: string
+          keyword_type: string
+          priority: number | null
+          search_volume: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          difficulty_score?: number | null
+          id?: string
+          keyword: string
+          keyword_type: string
+          priority?: number | null
+          search_volume?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          difficulty_score?: number | null
+          id?: string
+          keyword?: string
+          keyword_type?: string
+          priority?: number | null
+          search_volume?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       subscribers: {
         Row: {
