@@ -11,10 +11,10 @@ import { CalendarIcon, Clock, Facebook, Twitter, Linkedin, MessageSquare } from 
 import MDEditor from '@uiw/react-md-editor';
 
 export default function BlogPost() {
-  const { id } = useParams();
+  const { slug } = useParams();
 
   const { data: post, isLoading } = useQuery({
-    queryKey: ['blog-post', id],
+    queryKey: ['blog-post', slug],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('posts')
@@ -29,7 +29,7 @@ export default function BlogPost() {
             name
           )
         `)
-        .eq('id', id)
+        .eq('slug', slug)
         .single();
 
       if (error) throw error;
@@ -56,7 +56,7 @@ export default function BlogPost() {
         `)
         .eq('category_id', post.category_id)
         .eq('status', 'published')
-        .neq('id', id)
+        .neq('slug', slug)
         .order('published_at', { ascending: false })
         .limit(3);
 
@@ -228,7 +228,7 @@ export default function BlogPost() {
                   <p className="text-gray-500 italic">No related posts found</p>
                 ) : (
                   relatedPosts?.map((relatedPost) => (
-                    <Link key={relatedPost.id} to={`/blog/${relatedPost.id}`}>
+                    <Link key={relatedPost.id} to={`/blog/${relatedPost.slug}`}>
                       <Card className="overflow-hidden hover:shadow-md transition-shadow duration-300">
                         {relatedPost.featured_image && (
                           <img

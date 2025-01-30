@@ -19,6 +19,7 @@ export const Blog = () => {
           featured_image,
           reading_time,
           published_at,
+          slug,
           categories (
             name
           )
@@ -89,7 +90,7 @@ export const Blog = () => {
                     <CalendarIcon className="w-4 h-4 mr-1 text-primary" />
                     {post.published_at ? format(new Date(post.published_at), 'dd MMM yyyy') : 'Not published'}
                   </div>
-                  <Link to={`/blog/${post.id}`}>
+                  <Link to={`/blog/${post.slug}`}>
                     <Button variant="outline" className="hover:bg-primary hover:text-white transition-all">
                      Read more
                     </Button>
