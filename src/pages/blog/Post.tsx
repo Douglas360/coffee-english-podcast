@@ -97,18 +97,24 @@ export default function BlogPost() {
 
       <div className="container mx-auto px-6 py-12">
         {/* Breadcrumb */}
-        <Breadcrumb className="mb-8">
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/">Home</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/blog">Blog</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <span className="text-gray-600">{post.title}</span>
-          </BreadcrumbItem>
+        <Breadcrumb>
+          <nav className="flex items-center space-x-2 text-sm font-medium text-muted-foreground bg-white px-4 py-2 rounded-lg shadow-sm mb-8">
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/" className="text-primary hover:text-primary/80">
+                Home
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/blog" className="text-primary hover:text-primary/80">
+                Blog
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <span className="text-gray-800 font-semibold">{post.title}</span>
+            </BreadcrumbItem>
+          </nav>
         </Breadcrumb>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
@@ -138,8 +144,17 @@ export default function BlogPost() {
             </div>
 
             {/* Content */}
-            <div className="prose prose-lg max-w-none mb-12">
-              <MDEditor.Markdown source={post.content} />
+            <div className="prose prose-lg max-w-none mb-12 bg-white rounded-lg shadow-sm p-8">
+              <div data-color-mode="light">
+                <MDEditor.Markdown 
+                  source={post.content} 
+                  style={{ 
+                    backgroundColor: 'transparent',
+                    color: '#374151'
+                  }}
+                  className="markdown-content"
+                />
+              </div>
             </div>
 
             {/* Social Share */}
