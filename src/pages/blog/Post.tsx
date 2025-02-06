@@ -57,7 +57,7 @@ export default function BlogPost() {
   }, [post?.id]);
 
   const { data: relatedPosts } = useQuery({
-    queryKey: ['related-posts', post?.category_id],
+    queryKey: ['related-posts', post?.id],
     queryFn: async () => {
       if (!post?.category_id) return [];
       
@@ -70,20 +70,21 @@ export default function BlogPost() {
           featured_image,
           published_at,
           slug,
+          views_count,
           categories (
             name
           )
         `)
         .eq('category_id', post.category_id)
         .eq('status', 'published')
-        .neq('slug', slug)
-        .order('published_at', { ascending: false })
+        .neq('id', post.id)
+        .order('views_count', { ascending: false })
         .limit(3);
 
       if (error) throw error;
       return data;
     },
-    enabled: !!post?.category_id,
+    enabled: !!post?.id,
   });
 
   if (isLoading) {

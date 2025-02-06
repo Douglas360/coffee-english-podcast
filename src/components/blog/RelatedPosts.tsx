@@ -3,6 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { Card } from '@/components/ui/card';
+import { Eye } from 'lucide-react';
 
 interface RelatedPost {
   id: string;
@@ -11,6 +12,7 @@ interface RelatedPost {
   featured_image: string;
   published_at: string;
   slug: string;
+  views_count: number;
   categories: {
     name: string;
   };
@@ -49,11 +51,17 @@ export default function RelatedPosts({ posts }: RelatedPostsProps) {
                     </p>
                   )}
                   <div className="flex items-center justify-between text-sm text-gray-500">
-                    {relatedPost.categories?.name && (
-                      <span className="bg-primary/10 text-primary px-2 py-1 rounded-full text-xs">
-                        {relatedPost.categories.name}
+                    <div className="flex items-center gap-2">
+                      {relatedPost.categories?.name && (
+                        <span className="bg-primary/10 text-primary px-2 py-1 rounded-full text-xs">
+                          {relatedPost.categories.name}
+                        </span>
+                      )}
+                      <span className="flex items-center gap-1">
+                        <Eye className="w-4 h-4" />
+                        {relatedPost.views_count || 0}
                       </span>
-                    )}
+                    </div>
                     <span>
                       {format(new Date(relatedPost.published_at), 'dd MMM yyyy')}
                     </span>
