@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -14,13 +15,27 @@ interface SEOAnalysisProps {
 }
 
 export const SEOAnalysis = ({ postId, content, title, metaDescription, keywords }: SEOAnalysisProps) => {
+  // First get the post to ensure we have the correct UUID
   const { data: analysis, isLoading } = useQuery({
     queryKey: ['seo-analysis', postId],
     queryFn: async () => {
+      // Get the post first to ensure we have a valid UUID
+      const { data: post } = await supabase
+        .from('posts')
+        .select('id')
+        .eq('slug', postId)
+        .single();
+
+      if (!post) {
+        console.error('Post not found');
+        return null;
+      }
+
+      // Now use the post's UUID to get the SEO analysis
       const { data, error } = await supabase
         .from('seo_analysis')
         .select('*')
-        .eq('post_id', postId)
+        .eq('post_id', post.id)
         .single();
 
       if (error) throw error;
