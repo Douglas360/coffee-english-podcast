@@ -117,7 +117,7 @@ export default function BlogPost() {
               author={post.author}
               publishedAt={post.published_at}
               createdAt={post.created_at}
-              readingTime={post.reading_time}
+              readingTime={post.reading_time?.toString()}
             />
 
             {/* Content */}
