@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Index from './pages/Index';
@@ -7,6 +8,7 @@ import PostsIndex from './pages/admin/posts/Index';
 import PostEditor from './pages/admin/posts/Editor';
 import Settings from './pages/admin/Settings';
 import BlogPost from './pages/blog/Post';
+import BlogIndex from './pages/blog/Index';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminLayout from './components/layouts/AdminLayout';
 
@@ -27,6 +29,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/blog" element={<BlogIndex />} />
           <Route path="/blog/:slug" element={<BlogPost />} />
           <Route path="/admin" element={
             <ProtectedRoute>
