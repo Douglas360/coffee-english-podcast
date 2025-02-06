@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "./ui/card";
@@ -42,23 +43,25 @@ export const Blog = () => {
   }
 
   return (
-    <section className="py-20 bg-gradient-to-b from-gray-100 to-gray-50">
+    <section className="py-20 bg-gradient-to-b from-gray-50 to-white">
       <div className="container mx-auto px-6">
-        <h2 className="text-5xl font-extrabold text-center mb-16 text-gray-800">
+        <h2 className="text-5xl font-extrabold text-center mb-16 text-gray-800 animate-fade-up">
           Blog: Tips for Learning English
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-          {posts?.map((post) => (
+          {posts?.map((post, index) => (
             <Card
               key={post.id}
-              className="overflow-hidden rounded-lg shadow-md hover:shadow-2xl transition-all duration-300 bg-white">
+              className={`overflow-hidden rounded-lg shadow-md hover:shadow-2xl transition-all duration-300 bg-white animate-fade-up`}
+              style={{ animationDelay: `${index * 100}ms` }}>
               {post.featured_image && (
                 <div className="relative group">
                   <img
                     src={post.featured_image}
                     alt={post.title}
                     className="w-full h-56 object-cover transform group-hover:scale-105 transition-transform duration-300"
+                    loading="lazy"
                   />
                   <div className="absolute inset-0 bg-black bg-opacity-30 group-hover:bg-opacity-50 transition-opacity duration-300"></div>
                 </div>
@@ -78,10 +81,10 @@ export const Blog = () => {
                   )}
                 </div>
 
-                <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                <h3 className="text-2xl font-bold text-gray-900 mb-3 line-clamp-2 group-hover:text-primary transition-colors">
                   {post.title}
                 </h3>
-                <p className="text-gray-600 leading-relaxed mb-6">
+                <p className="text-gray-600 leading-relaxed mb-6 line-clamp-3">
                   {post.excerpt}
                 </p>
 
@@ -91,8 +94,11 @@ export const Blog = () => {
                     {post.published_at ? format(new Date(post.published_at), 'dd MMM yyyy') : 'Not published'}
                   </div>
                   <Link to={`/blog/${post.slug}`}>
-                    <Button variant="outline" className="hover:bg-primary hover:text-white transition-all">
-                     Read more
+                    <Button 
+                      variant="outline" 
+                      className="hover:bg-primary hover:text-white transition-all hover:scale-105"
+                    >
+                      Read more
                     </Button>
                   </Link>
                 </div>
