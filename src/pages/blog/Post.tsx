@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,6 +14,7 @@ import RelatedPosts from '@/components/blog/RelatedPosts';
 export default function BlogPost() {
   const { slug } = useParams();
 
+  // Fetch post data
   const { data: post, isLoading } = useQuery({
     queryKey: ['blog-post', slug],
     queryFn: async () => {
@@ -37,6 +38,23 @@ export default function BlogPost() {
       return data;
     },
   });
+
+  // Increment view count when post is loaded
+  useEffect(() => {
+    const incrementViews = async () => {
+      if (post?.id) {
+        const { error } = await supabase.rpc('increment_post_views', {
+          post_id: post.id
+        });
+        
+        if (error) {
+          console.error('Error incrementing views:', error);
+        }
+      }
+    };
+
+    incrementViews();
+  }, [post?.id]);
 
   const { data: relatedPosts } = useQuery({
     queryKey: ['related-posts', post?.category_id],
