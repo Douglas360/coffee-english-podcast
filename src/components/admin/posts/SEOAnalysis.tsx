@@ -15,7 +15,6 @@ interface SEOAnalysisProps {
 }
 
 export const SEOAnalysis = ({ postId, content, title, metaDescription, keywords }: SEOAnalysisProps) => {
-  // First get the post to ensure we have the correct UUID
   const { data: analysis, isLoading } = useQuery({
     queryKey: ['seo-analysis', postId],
     queryFn: async () => {
@@ -31,12 +30,12 @@ export const SEOAnalysis = ({ postId, content, title, metaDescription, keywords 
         return null;
       }
 
-      // Now use the post's UUID to get the SEO analysis
+      // Now use the post's UUID to get the SEO analysis, using maybeSingle() to handle no results
       const { data, error } = await supabase
         .from('seo_analysis')
         .select('*')
         .eq('post_id', post.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;
