@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <!-- Página inicial do blog -->
+  <url>
+    <loc>https://coffeeenglishpodcast.netlify.app/blog/</loc>
+    <lastmod>2025-02-07</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Postagens do Blog -->
+  <url>
+    <loc>https://coffeeenglishpodcast.netlify.app/blog/master-english-from-scratch-your-ultimate-beginner-guide</loc>
+    <lastmod>2025-02-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://coffeeenglishpodcast.netlify.app/blog/master-english-faster-7-essential-tips-to-boost-learning</loc>
+    <lastmod>2025-02-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://coffeeenglishpodcast.netlify.app/blog/speak-like-a-native-10-essential-english-expressions</loc>
+    <lastmod>2025-02-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://coffeeenglishpodcast.netlify.app/blog/learn-english-naturally-simple-strategies-for-everyday-practice</loc>
+    <lastmod>2025-02-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://coffeeenglishpodcast.netlify.app/blog/10-expressions-english-sound-like-native</loc>
+    <lastmod>2025-02-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://coffeeenglishpodcast.netlify.app/blog/master-english-at-home-simple-tips-for-self-learning</loc>
+    <lastmod>2025-02-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+</urlset>
