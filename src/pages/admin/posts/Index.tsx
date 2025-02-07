@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -12,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Eye, Edit, Trash, Plus } from "lucide-react";
+import { Eye, Edit, Trash, Plus, ImageIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
@@ -112,6 +113,7 @@ export default function PostsIndex() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-24">Image</TableHead>
               <TableHead>Title</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>SEO Score</TableHead>
@@ -123,6 +125,21 @@ export default function PostsIndex() {
           <TableBody>
             {posts?.map((post) => (
               <TableRow key={post.id}>
+                <TableCell>
+                  {post.featured_image ? (
+                    <div className="relative w-16 h-16 rounded-md overflow-hidden">
+                      <img 
+                        src={post.featured_image} 
+                        alt={post.title}
+                        className="object-cover w-full h-full"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-16 h-16 bg-muted rounded-md flex items-center justify-center">
+                      <ImageIcon className="w-6 h-6 text-muted-foreground" />
+                    </div>
+                  )}
+                </TableCell>
                 <TableCell>{post.title}</TableCell>
                 <TableCell>
                   <span className={`px-2 py-1 rounded-full text-xs ${
