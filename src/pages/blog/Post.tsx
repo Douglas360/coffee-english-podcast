@@ -4,15 +4,18 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare, ThumbsUp, HomeIcon, ChevronRight } from 'lucide-react';
 import MDEditor from '@uiw/react-md-editor';
 import PostHero from '@/components/blog/PostHero';
 import PostAuthor from '@/components/blog/PostAuthor';
 import PostShare from '@/components/blog/PostShare';
 import RelatedPosts from '@/components/blog/RelatedPosts';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 export default function BlogPost() {
   const { slug } = useParams();
+  const { toast } = useToast();
 
   // Fetch post data
   const { data: post, isLoading } = useQuery({
@@ -38,6 +41,39 @@ export default function BlogPost() {
       return data;
     },
   });
+
+  // Handle like post
+  const handleLike = async () => {
+    if (!post?.id) return;
+
+    try {
+      const { error } = await supabase
+        .from('post_likes')
+        .insert([{ post_id: post.id }]);
+
+      if (error) throw error;
+
+      // Update likes count in the posts table
+      const { error: updateError } = await supabase
+        .from('posts')
+        .update({ likes_count: (post.likes_count || 0) + 1 })
+        .eq('id', post.id);
+
+      if (updateError) throw updateError;
+
+      toast({
+        title: "Post curtido!",
+        description: "Obrigado por seu feedback!",
+      });
+    } catch (error) {
+      console.error('Error liking post:', error);
+      toast({
+        title: "Erro ao curtir o post",
+        description: "Tente novamente mais tarde.",
+        variant: "destructive",
+      });
+    }
+  };
 
   // Increment view count when post is loaded
   useEffect(() => {
@@ -108,21 +144,26 @@ export default function BlogPost() {
       />
 
       <div className="container mx-auto px-6 py-12">
-        {/* Breadcrumb */}
-        <nav className="flex items-center space-x-2 text-sm font-medium text-muted-foreground bg-white px-4 py-2 rounded-lg shadow-sm mb-8 animate-fade-in">
+        {/* Enhanced Breadcrumb */}
+        <nav className="flex items-center space-x-2 text-sm font-medium text-muted-foreground bg-white px-4 py-3 rounded-lg shadow-sm mb-8 animate-fade-in hover:shadow-md transition-shadow">
           <Breadcrumb>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/" className="text-primary hover:text-primary/80">
-                Home
+              <BreadcrumbLink as={Link} to="/" className="text-primary hover:text-primary/80 flex items-center gap-1">
+                <HomeIcon className="w-4 h-4" />
+                <span>Início</span>
               </BreadcrumbLink>
             </BreadcrumbItem>
-            <BreadcrumbSeparator />
+            <BreadcrumbSeparator>
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            </BreadcrumbSeparator>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/blog" className="text-primary hover:text-primary/80">
+              <BreadcrumbLink as={Link} to="/blog" className="text-primary hover:text-primary/80 font-medium">
                 Blog
               </BreadcrumbLink>
             </BreadcrumbItem>
-            <BreadcrumbSeparator />
+            <BreadcrumbSeparator>
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            </BreadcrumbSeparator>
             <BreadcrumbItem>
               <span className="text-gray-800 font-semibold">{post.title}</span>
             </BreadcrumbItem>
@@ -132,12 +173,25 @@ export default function BlogPost() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           {/* Main Content */}
           <div className="lg:col-span-2">
-            <PostAuthor 
-              author={post.author}
-              publishedAt={post.published_at}
-              createdAt={post.created_at}
-              readingTime={post.reading_time?.toString()}
-            />
+            <div className="flex items-center justify-between mb-8">
+              <PostAuthor 
+                author={post.author}
+                publishedAt={post.published_at}
+                createdAt={post.created_at}
+                readingTime={post.reading_time?.toString()}
+              />
+              
+              {/* Like Button */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleLike}
+                className="flex items-center gap-2 hover:bg-primary/5"
+              >
+                <ThumbsUp className="w-4 h-4" />
+                <span>{post.likes_count || 0}</span>
+              </Button>
+            </div>
 
             {/* Content */}
             <div className="prose prose-lg max-w-none mb-12 bg-white rounded-lg shadow-sm p-8 animate-fade-up delay-100">
@@ -159,9 +213,9 @@ export default function BlogPost() {
             <div className="bg-white p-6 rounded-lg shadow-sm animate-fade-up delay-300">
               <h3 className="text-2xl font-bold mb-6 flex items-center gap-2">
                 <MessageSquare className="w-6 h-6" />
-                Comments
+                Comentários
               </h3>
-              <p className="text-gray-500">Comments coming soon...</p>
+              <p className="text-gray-500">Sistema de comentários em desenvolvimento...</p>
             </div>
           </div>
 
