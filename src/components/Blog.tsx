@@ -51,59 +51,61 @@ export const Blog = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
           {posts?.map((post, index) => (
-            <Card
+            <Link
               key={post.id}
-              className={`overflow-hidden rounded-lg shadow-md hover:shadow-2xl transition-all duration-300 bg-white animate-fade-up`}
-              style={{ animationDelay: `${index * 100}ms` }}>
-              {post.featured_image && (
-                <div className="relative group">
-                  <img
-                    src={post.featured_image}
-                    alt={post.title}
-                    className="w-full h-56 object-cover transform group-hover:scale-105 transition-transform duration-300"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-black bg-opacity-30 group-hover:bg-opacity-50 transition-opacity duration-300"></div>
-                </div>
-              )}
-              <div className="p-6">
-                <div className="flex items-center gap-3 text-sm text-gray-500 mb-3">
-                  {post.categories?.name && (
-                    <span className="bg-primary/20 text-primary px-3 py-1 rounded-full uppercase font-semibold">
-                      {post.categories.name}
-                    </span>
-                  )}
-                  {post.reading_time && (
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-4 h-4 text-primary" />
-                      <span>{post.reading_time} min</span>
-                    </div>
-                  )}
-                </div>
-
-                <h3 className="text-2xl font-bold text-gray-900 mb-3 line-clamp-2 group-hover:text-primary transition-colors">
-                  {post.title}
-                </h3>
-                <p className="text-gray-600 leading-relaxed mb-6 line-clamp-3">
-                  {post.excerpt}
-                </p>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center text-sm text-gray-500">
-                    <CalendarIcon className="w-4 h-4 mr-1 text-primary" />
-                    {post.published_at ? format(new Date(post.published_at), 'dd MMM yyyy') : 'Not published'}
+              to={`/blog/${post.slug}`}
+              className="block transition-transform hover:scale-[1.02] duration-300">
+              <Card
+                className="overflow-hidden rounded-lg shadow-md hover:shadow-2xl transition-all duration-300 bg-white animate-fade-up h-full"
+                style={{ animationDelay: `${index * 100}ms` }}>
+                {post.featured_image && (
+                  <div className="relative group">
+                    <img
+                      src={post.featured_image}
+                      alt={post.title}
+                      className="w-full h-56 object-cover transform group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-black bg-opacity-30 group-hover:bg-opacity-50 transition-opacity duration-300"></div>
                   </div>
-                  <Link to={`/blog/${post.slug}`}>
+                )}
+                <div className="p-6">
+                  <div className="flex items-center gap-3 text-sm text-gray-500 mb-3">
+                    {post.categories?.name && (
+                      <span className="bg-primary/20 text-primary px-3 py-1 rounded-full uppercase font-semibold">
+                        {post.categories.name}
+                      </span>
+                    )}
+                    {post.reading_time && (
+                      <div className="flex items-center gap-1">
+                        <Clock className="w-4 h-4 text-primary" />
+                        <span>{post.reading_time} min</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <h3 className="text-2xl font-bold text-gray-900 mb-3 line-clamp-2 group-hover:text-primary transition-colors">
+                    {post.title}
+                  </h3>
+                  <p className="text-gray-600 leading-relaxed mb-6 line-clamp-3">
+                    {post.excerpt}
+                  </p>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center text-sm text-gray-500">
+                      <CalendarIcon className="w-4 h-4 mr-1 text-primary" />
+                      {post.published_at ? format(new Date(post.published_at), 'dd MMM yyyy') : 'Not published'}
+                    </div>
                     <Button 
                       variant="outline" 
                       className="hover:bg-primary hover:text-white transition-all hover:scale-105"
                     >
                       Read more
                     </Button>
-                  </Link>
+                  </div>
                 </div>
-              </div>
-            </Card>
+              </Card>
+            </Link>
           ))}
         </div>
       </div>
