@@ -222,9 +222,9 @@ export default function BlogPost() {
             <div className="bg-white p-6 rounded-lg shadow-sm animate-fade-up delay-300">
               <h3 className="text-2xl font-bold mb-6 flex items-center gap-2">
                 <MessageSquare className="w-6 h-6" />
-                Comentários
+                Comments
               </h3>
-              <p className="text-gray-500">Sistema de comentários em desenvolvimento...</p>
+              <p className="text-gray-500">Coming soon..</p>
             </div>
           </div>
 
