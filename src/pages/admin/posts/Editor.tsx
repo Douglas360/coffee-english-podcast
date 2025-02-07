@@ -118,6 +118,7 @@ export default function Editor() {
           slug: uniqueSlug,
           author_id: session.user.id,
           meta_keywords: data.meta_keywords,
+          published_at: data.scheduled_for?.toISOString(),
           scheduled_for: data.scheduled_for?.toISOString(),
           featured_image: data.featured_image
         }])
@@ -154,6 +155,7 @@ export default function Editor() {
           ...data,
           slug: uniqueSlug,
           meta_keywords: data.meta_keywords,
+          published_at: data.scheduled_for?.toISOString(),
           scheduled_for: data.scheduled_for?.toISOString(),
           featured_image: data.featured_image,
           updated_at: new Date().toISOString()
