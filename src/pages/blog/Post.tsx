@@ -47,19 +47,24 @@ export default function BlogPost() {
     if (!post?.id) return;
 
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Login necessário",
+          description: "Você precisa estar logado para curtir posts.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { error } = await supabase
         .from('post_likes')
-        .insert([{ post_id: post.id }]);
+        .insert({
+          post_id: post.id,
+          user_id: user.id
+        });
 
       if (error) throw error;
-
-      // Update likes count in the posts table
-      const { error: updateError } = await supabase
-        .from('posts')
-        .update({ likes_count: (post.likes_count || 0) + 1 })
-        .eq('id', post.id);
-
-      if (updateError) throw updateError;
 
       toast({
         title: "Post curtido!",
@@ -148,17 +153,21 @@ export default function BlogPost() {
         <nav className="flex items-center space-x-2 text-sm font-medium text-muted-foreground bg-white px-4 py-3 rounded-lg shadow-sm mb-8 animate-fade-in hover:shadow-md transition-shadow">
           <Breadcrumb>
             <BreadcrumbItem>
-              <BreadcrumbLink as={Link} to="/" className="text-primary hover:text-primary/80 flex items-center gap-1">
-                <HomeIcon className="w-4 h-4" />
-                <span>Início</span>
+              <BreadcrumbLink asChild>
+                <Link to="/" className="text-primary hover:text-primary/80 flex items-center gap-1">
+                  <HomeIcon className="w-4 h-4" />
+                  <span>Início</span>
+                </Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator>
               <ChevronRight className="w-4 h-4 text-muted-foreground" />
             </BreadcrumbSeparator>
             <BreadcrumbItem>
-              <BreadcrumbLink as={Link} to="/blog" className="text-primary hover:text-primary/80 font-medium">
-                Blog
+              <BreadcrumbLink asChild>
+                <Link to="/blog" className="text-primary hover:text-primary/80 font-medium">
+                  Blog
+                </Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator>
