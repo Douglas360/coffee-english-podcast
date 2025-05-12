@@ -23,6 +23,7 @@ export default function Auth() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+
   const form = useForm<FormData>();
 
   const onSubmit = async (data: FormData) => {
